@@ -20,8 +20,21 @@
 # production
 /build
 
+# SQLite / Prisma
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# IDEs & editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 
 # debug
@@ -34,10 +47,10 @@ yarn-error.log*
 .env*
 !.env.example
 
-
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
