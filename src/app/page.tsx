@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { Suspense } from 'react';
-import { createUser } from './actions';
+import { createUser, removeUser } from './actions';
 
 async function UserList() {
   const users = await prisma.user.findMany({
@@ -40,6 +40,14 @@ export default function HomePage() {
         <input type="email" name="email" placeholder="Email" required className="border p-2 rounded text-black" />
         <button type="submit" className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition font-medium">
           Create User
+        </button>
+      </form>
+
+      <form action={removeUser} className="flex flex-col gap-3 border p-4 rounded-lg shadow-sm">
+        <h2 className="font-semibold text-lg">Remove User</h2>
+        <input type="email" name="email" placeholder="Email" required className="border p-2 rounded text-black" />
+        <button type="submit" className="bg-red-600 text-white p-2 rounded hover:bg-red-700 transition font-medium">
+          Remove User
         </button>
       </form>
 

@@ -19,3 +19,18 @@ export async function createUser(formData: FormData) {
     // Refresh the UI automatically
     revalidatePath('/');
 }
+
+export async function removeUser(formData: FormData) {
+    const email = formData.get('email') as string;
+
+    if (!email) return;
+
+    await prisma.user.delete({
+        where: {
+            email,
+        },
+    });
+
+    // Refresh the UI automatically
+    revalidatePath('/');
+}
