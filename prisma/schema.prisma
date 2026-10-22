@@ -4,12 +4,99 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db" // Caminho para a tua base de dados SQLite
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+// ------------------------------------------------------
+// ENTIDADES PRINCIPAIS
+// ------------------------------------------------------
+
+model Course {
+  id      String  @id @default(uuid())
+  name    String  // Ex: "Arquitetura de Software"
+  acronym String  @unique // Ex: "ARQSOFT"
+  
+  shifts  Shift[]
+}
+
+model Professor {
+  id      String   @id @default(uuid())
+  name    String
+  email   String   @unique
+  
+  lessons Lesson[]
+}
+
+// Representa um Turno/Turma de uma UC (Ex: "MEA1", "PL1")
+model Shift {
+  id               String   @id @default(uuid())
+  name             String
+  enrolledStudents Int      // Requisito 2: Número de estudantes inscritos
+  roomTypeReq      String?  // Requisito 2: Tipo de sala exigida (Ex: "Laboratório", "Anfiteatro")
+  
+  course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId         String
+  
+  lessons          Lesson[]
+}
+
+model Room {
+  id       String   @id @default(uuid())
+  name     String   @unique // Ex: "C1.03", "Auditorio C"
+  capacity Int      // Requisito 2: Lotação da sala
+  type     String   // Ex: "Normal", "Laboratório", "Anfiteatro"
+  
+  lessons  Lesson[]
+}
+
+// Representa a Aula (a instância no tempo)
+model Lesson {
+  id          String   @id @default(uuid())
+  date        DateTime // Data específica da aula
+  startTime   DateTime // Hora de início
+  endTime     DateTime // Hora de fim
+  
+  // Relações
+  shift       Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shiftId     String
+  
+  room        Room?    @relation(fields: [roomId], references: [id])
+  roomId      String?  // Opcional, para permitir alocação/sugestão posterior (Requisito 2)
+  
+  professor   Professor? @relation(fields: [professorId], references: [id])
+  professorId String?  // Opcional/Mutável para permitir mudanças adhoc (Requisito 3)
+
+  violations  Violation[]
+}
+
+// ------------------------------------------------------
+// GESTÃO DE REGRAS E QUALIDADE DO HORÁRIO (Requisito 1 e 3)
+// ------------------------------------------------------
+
+// Permite a evolução das regras sem alterar o schema da BD
+model Rule {
+  id          String   @id @default(uuid())
+  code        String   @unique // Ex: "MAX_3H_CONSECUTIVAS", "OVERLAP_PROFESSOR"
+  name        String
+  description String
+  isActive    Boolean  @default(true)
+  
+  // Como o SQLite não suporta JSON nativo, guardamos os parâmetros da regra 
+  // como uma string (ex: '{"maxDurationMinutes": 180}') e fazemos parse no código.
+  parameters  String?  
+}
+
+// Regista as violações encontradas num horário
+model Violation {
+  id          String   @id @default(uuid())
+  description String   // Ex: "Aula excede 3h seguidas", "Professor alocado a duas aulas ao mesmo tempo"
+  severity    String   // Ex: "ERRO" (impede alocação), "AVISO" (alocação não ideal)
+  createdAt   DateTime @default(now())
+  
+  // Regra que foi violada
+  ruleCode    String?
+  
+  // A que aula(s) esta violação diz respeito
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId    String
 }
