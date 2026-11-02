@@ -5,6 +5,7 @@ export async function seedDatabase() {
   // Limpar tabelas por ordem para evitar conflitos de FK
   await prisma.violation.deleteMany({});
   await prisma.lesson.deleteMany({});
+  await prisma.schedule.deleteMany({});
   await prisma.shift.deleteMany({});
   await prisma.course.deleteMany({});
   await prisma.professor.deleteMany({});
@@ -48,7 +49,12 @@ export async function seedDatabase() {
     ],
   });
 
-  // 2. Criar Salas (Requisito 2)
+  // 2. Criar Horário principal (Schedule)
+  const schedule = await prisma.schedule.create({
+    data: { name: 'Horário 2026/27 S1', isMain: true },
+  });
+
+  // 3. Criar Salas (Requisito 2)
   const roomLab1 = await prisma.room.create({
     data: { name: 'Lab 1.10 (Informática)', capacity: 36, type: 'Laboratório' },
   });
@@ -195,6 +201,7 @@ export async function seedDatabase() {
       date: dSegunda,
       startTime: new Date(new Date(dSegunda).setHours(9, 0, 0, 0)),
       endTime: new Date(new Date(dSegunda).setHours(11, 0, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftADSTeorica.id,
       roomId: roomAuditorium1.id,
       professorId: profCarlos.id,
@@ -207,6 +214,7 @@ export async function seedDatabase() {
       date: dSegunda,
       startTime: new Date(new Date(dSegunda).setHours(11, 30, 0, 0)),
       endTime: new Date(new Date(dSegunda).setHours(13, 30, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftADSPL1.id,
       roomId: roomLab1.id,
       professorId: profCarlos.id,
@@ -223,6 +231,7 @@ export async function seedDatabase() {
       date: dSegunda,
       startTime: new Date(new Date(dSegunda).setHours(14, 0, 0, 0)),
       endTime: new Date(new Date(dSegunda).setHours(18, 0, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftADSPL2.id,
       roomId: null, // Sem sala
       professorId: profPedro.id,
@@ -238,6 +247,7 @@ export async function seedDatabase() {
       date: dTerca,
       startTime: new Date(new Date(dTerca).setHours(10, 0, 0, 0)),
       endTime: new Date(new Date(dTerca).setHours(12, 0, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftSDTeorica.id,
       roomId: roomAuditorium2.id,
       professorId: profMaria.id,
@@ -251,6 +261,7 @@ export async function seedDatabase() {
       date: dTerca,
       startTime: new Date(new Date(dTerca).setHours(14, 0, 0, 0)),
       endTime: new Date(new Date(dTerca).setHours(16, 30, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftSDPL1.id,
       roomId: roomNormal1.id, // Requer Laboratório, mas está em Sala Normal
       professorId: profMaria.id,
@@ -267,6 +278,7 @@ export async function seedDatabase() {
       date: dQuarta,
       startTime: new Date(new Date(dQuarta).setHours(9, 30, 0, 0)),
       endTime: new Date(new Date(dQuarta).setHours(11, 30, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftERTP1.id,
       roomId: roomNormal2.id, // Lotação 25 vs 42 alunos
       professorId: profAna.id,
@@ -279,6 +291,7 @@ export async function seedDatabase() {
       date: dQuarta,
       startTime: new Date(new Date(dQuarta).setHours(11, 30, 0, 0)),
       endTime: new Date(new Date(dQuarta).setHours(13, 30, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftBDATeorica.id,
       roomId: roomAuditorium1.id,
       professorId: profPedro.id,
@@ -294,6 +307,7 @@ export async function seedDatabase() {
       date: dQuinta,
       startTime: new Date(new Date(dQuinta).setHours(14, 0, 0, 0)),
       endTime: new Date(new Date(dQuinta).setHours(16, 0, 0, 0)),
+      scheduleId: schedule.id,
       shiftId: shiftBDAPL1.id,
       roomId: null, // Sem sala
       professorId: profPedro.id,

@@ -179,14 +179,21 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
 
   // Grava as violações na base de dados
   if (violationsToInsert.length > 0) {
-    await prisma.violation.createMany({
-      data: violationsToInsert.map((v) => ({
-        lessonId: v.lessonId,
-        ruleCode: v.ruleCode,
-        description: v.description,
-        severity: v.severity,
-      })),
-    });
+    // Encontra o horário principal para associar as violações
+    const mainSchedule = await prisma.schedule.findFirst({ where: { isMain: true } })
+      ?? await prisma.schedule.findFirst();
+
+    if (mainSchedule) {
+      await prisma.violation.createMany({
+        data: violationsToInsert.map((v) => ({
+          lessonId: v.lessonId,
+          scheduleId: mainSchedule.id,
+          ruleCode: v.ruleCode,
+          description: v.description,
+          severity: v.severity,
+        })),
+      });
+    }
   }
 
   const errors = violationsToInsert.filter((v) => v.severity === 'ERRO').length;

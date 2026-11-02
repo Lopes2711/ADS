@@ -108,6 +108,7 @@ export async function splitShiftAction(shiftId: string): Promise<void> {
         date: newStart,
         startTime: newStart,
         endTime: newEnd,
+        scheduleId: originalLesson.scheduleId,
         shiftId: newShift.id,
         roomId: null,
         professorId: originalLesson.professorId,

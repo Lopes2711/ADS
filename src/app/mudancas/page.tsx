@@ -1,19 +1,15 @@
+import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { ensureDataSeeded } from '@/lib/ensureData';
-import { AdHocSimulator } from '@/components/AdHocSimulator';
 
-// @next-codemod-ignore
-export const instant = false;
 
-export default async function MudancasAdHocPage() {
-  await ensureDataSeeded();
-
+export default async function MudancasPage() {
   const [shifts, professors, lessons] = await Promise.all([
     prisma.shift.findMany({
-      include: { course: true },
-      orderBy: { name: 'asc' },
+      include: { course: true, lessons: true },
+      orderBy: { enrolledStudents: 'desc' },
     }),
     prisma.professor.findMany({
+      include: { lessons: { include: { shift: { include: { course: true } } } } },
       orderBy: { name: 'asc' },
     }),
     prisma.lesson.findMany({
@@ -25,73 +21,85 @@ export default async function MudancasAdHocPage() {
     }),
   ]);
 
-  const mappedShifts = shifts.map((s) => ({
-    id: s.id,
-    name: s.name,
-    enrolledStudents: s.enrolledStudents,
-    roomTypeReq: s.roomTypeReq,
-    courseAcronym: s.course.acronym,
-    courseName: s.course.name,
-  }));
-
-  const mappedLessons = lessons.map((l) => ({
-    id: l.id,
-    date: l.date.toISOString(),
-    startTime: l.startTime.toISOString(),
-    endTime: l.endTime.toISOString(),
-    courseAcronym: l.shift.course.acronym,
-    shiftName: l.shift.name,
-    enrolledStudents: l.shift.enrolledStudents,
-    currentProfessorId: l.professorId,
-    currentProfessorName: l.professor?.name ?? null,
-  }));
-
   return (
-    <div className="space-y-8 pb-12">
-      {/* Header */}
-      <div className="border-b border-slate-200 pb-5">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-600 mb-1">
-          <span>Requisito 3</span>
-          <span>&bull;</span>
-          <span>Mudanças Ad-hoc & Avaliação de Impacto</span>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Mudanças Ad-hoc &amp; Impacto</h1>
+          <p className="text-slate-500 text-sm mt-1">Requisito 3 — Avaliação de impacto de desdobramentos de turmas e trocas de docentes</p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Simulador de Mudanças Ad-hoc no Horário
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Execute alterações pontuais ao horário (desdobramento de turmas ou troca de docentes de UCs) e avalie imediatamente o impacto específico gerado na qualidade e conformidade do horário.
-        </p>
+        <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
 
-      {/* Simulator Component */}
-      <AdHocSimulator
-        shifts={mappedShifts}
-        professors={professors}
-        lessons={mappedLessons}
-      />
-
-      {/* Explanatory Methodology Card */}
-      <div className="bg-slate-900 text-slate-200 rounded-xl p-6 border border-slate-800 space-y-3">
-        <h3 className="font-bold text-white text-sm flex items-center gap-2">
-          <span>🎯</span> Como é avaliado o impacto específico de cada mudança (Requisito 3)
-        </h3>
-        <p className="text-xs text-slate-300 leading-relaxed">
-          Sempre que uma alteração é simulada ou submetida, o sistema executa um cálculo diferencial:
+      {/* Turnos / Candidatos a Desdobramento */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-slate-900">Turnos e Lotação ({shifts.length})</h2>
+        <p className="text-xs text-slate-500">
+          Turnos com elevado número de inscritos (ex: &gt;40 para laboratórios) são candidatos a desdobramento em turmas menores (ex: PL2A e PL2B).
         </p>
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs pt-1">
-          <li className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
-            <strong className="text-blue-400 block mb-1">1. Sobreposição de Turnos:</strong>
-            Garante que o novo turno criado ou ajustado não coincide com outras aulas do mesmo plano curricular para aquele grupo de estudantes.
-          </li>
-          <li className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
-            <strong className="text-blue-400 block mb-1">2. Conflito de Docente:</strong>
-            Verifica na agenda global do docente se este já tem aulas de outras UCs/cursos atribuídas no mesmo intervalo horário.
-          </li>
-          <li className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
-            <strong className="text-blue-400 block mb-1">3. Capacidade & Espaço:</strong>
-            Ao desdobrar um turno sobrelotado, o impacto reflete-se na possibilidade de encontrar salas compatíveis onde antes era impossível.
-          </li>
-        </ul>
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase">
+              <tr>
+                <th className="px-4 py-3">UC</th>
+                <th className="px-4 py-3">Turno</th>
+                <th className="px-4 py-3">Tipo</th>
+                <th className="px-4 py-3">Inscritos</th>
+                <th className="px-4 py-3">Estado / Sugestão</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {shifts.map((shift) => {
+                const isOvercrowded = shift.enrolledStudents > 40 && shift.roomTypeReq === 'Laboratório';
+                return (
+                  <tr key={shift.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 font-semibold text-slate-800">{shift.course.acronym}</td>
+                    <td className="px-4 py-3 font-medium text-slate-900">{shift.name}</td>
+                    <td className="px-4 py-3 text-slate-600">{shift.type || '-'} ({shift.roomTypeReq})</td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">{shift.enrolledStudents} alunos</td>
+                    <td className="px-4 py-3">
+                      {isOvercrowded ? (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700">
+                          ⚠️ Sobrelotado — Recomendado Desdobramento
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-500">Normal</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Docentes e Cargas Horárias */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-slate-900">Docentes e Aulas Atribuídas ({professors.length})</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {professors.map((p) => (
+            <div key={p.id} className="bg-white border border-slate-200 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-900 text-sm">{p.name}</span>
+                <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                  {p.lessons.length} aulas
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">{p.email}</p>
+              <div className="pt-2 border-t border-slate-100 text-xs text-slate-600 space-y-1">
+                {p.lessons.map((l) => (
+                  <div key={l.id} className="flex justify-between">
+                    <span>{l.shift.course.acronym} ({l.shift.name})</span>
+                    <span className="text-slate-400">
+                      {new Date(l.startTime).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
