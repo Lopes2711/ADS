@@ -183,7 +183,7 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                 <span>📊</span> Avaliação de Impacto da Mudança
               </h3>
               <span className="text-[11px] px-2 py-0.5 rounded bg-blue-500/30 text-blue-300 border border-blue-400/30 font-semibold">
-                Requisito 3
+                Requisito 8
               </span>
             </div>
 

@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
+// @next-codemod-ignore
+export const instant = false;
+
 
 export default async function RegrasPage() {
   const [rules, violations] = await Promise.all([
@@ -24,7 +27,7 @@ export default async function RegrasPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Regras &amp; Violações</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 1 — Motor de regras e validação de integridade</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 2 — Motor de regras e validação de integridade</p>
         </div>
         <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>

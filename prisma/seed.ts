@@ -86,7 +86,7 @@ async function main() {
   // ADS
   const shiftADS_T1  = await prisma.shift.create({ data: { name: 'ADS-T1',  type: 'T',  enrolledStudents: 95, roomTypeReq: 'Anfiteatro',  courseId: courseADS.id } });
   const shiftADS_PL1 = await prisma.shift.create({ data: { name: 'ADS-PL1', type: 'PL', enrolledStudents: 32, roomTypeReq: 'Laboratório', courseId: courseADS.id } });
-  // Intentionally overcrowded for Req. 3 split demo (68 students, labs max 40)
+  // Intentionally overcrowded for Req. 8 split demo (68 students, labs max 40)
   const shiftADS_PL2 = await prisma.shift.create({ data: { name: 'ADS-PL2', type: 'PL', enrolledStudents: 68, roomTypeReq: 'Laboratório', courseId: courseADS.id } });
 
   // SD
@@ -137,14 +137,14 @@ async function main() {
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftADS_PL1.id, date: mon, startTime: dt(mon, 11, 30), endTime: dt(mon, 13, 30), roomId: roomLab1.id, professorId: profCarlos.id } });
 
   // MON 14:00-18:00 — ADS PL2 — NO ROOM, 68 students, 4h duration
-  //   → MISSING_ROOM + MAX_3H_CONSECUTIVAS (Req.2 + Req.1 demos)
+  //   → MISSING_ROOM + MAX_3H_CONSECUTIVAS (Req.4 + Req.2 demos)
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftADS_PL2.id, date: mon, startTime: dt(mon, 14), endTime: dt(mon, 18), roomId: null, professorId: profPedro.id } });
 
   // TUE 10:00-12:00 — SD Teórica — Auditório Afonso (OK ✅)
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftSD_T1.id, date: tue, startTime: dt(tue, 10), endTime: dt(tue, 12), roomId: roomAud2.id, professorId: profMaria.id } });
 
   // TUE 14:00-16:30 — SD PL1 — Sala Normal instead of Lab
-  //   → ROOM_TYPE violation (Req.1 demo)
+  //   → ROOM_TYPE violation (Req.2 demo)
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftSD_PL1.id, date: tue, startTime: dt(tue, 14), endTime: dt(tue, 16, 30), roomId: roomNorm1.id, professorId: profMaria.id } });
 
   // TUE 10:00-12:00 — BDA Teórica — Carlos Silva (same slot as SD-T1 for Maria, no conflict)
@@ -152,13 +152,13 @@ async function main() {
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftBDA_T1.id, date: tue, startTime: dt(tue, 10), endTime: dt(tue, 12), roomId: roomAud1.id, professorId: profPedro.id } });
 
   // WED 09:30-11:30 — ER TP1 — Sala C2.04 (capacity 25, students 42)
-  //   → ROOM_CAPACITY violation (Req.2 demo)
+  //   → ROOM_CAPACITY violation (Req.4 demo)
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftER_TP1.id, date: wed, startTime: dt(wed, 9, 30), endTime: dt(wed, 11, 30), roomId: roomNorm2.id, professorId: profAna.id } });
 
   // WED 11:30-13:30 — BDA T1 again (different week rep.) — Pedro (same as TUE BDA-T1, different day — OK)
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftBDA_T1.id, date: wed, startTime: dt(wed, 11, 30), endTime: dt(wed, 13, 30), roomId: roomAud1.id, professorId: profPedro.id } });
 
-  // THU 14:00-16:00 — BDA PL1 — no room assigned (Req.2 pending allocation demo)
+  // THU 14:00-16:00 — BDA PL1 — no room assigned (Req.4 pending allocation demo)
   await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftBDA_PL1.id, date: thu, startTime: dt(thu, 14), endTime: dt(thu, 16), roomId: null, professorId: profPedro.id } });
 
   // THU 14:00-16:00 — BDA PL1 duplicate slot → PROFESSOR_OVERLAP for Pedro (pedro has BDA-PL1 + next)

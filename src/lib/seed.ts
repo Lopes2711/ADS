@@ -12,7 +12,7 @@ export async function seedDatabase() {
   await prisma.room.deleteMany({});
   await prisma.rule.deleteMany({});
 
-  // 1. Criar Regras de Negócio (Requisito 1)
+  // 1. Criar Regras de Negócio (Requisito 2)
   await prisma.rule.createMany({
     data: [
       {
@@ -54,7 +54,7 @@ export async function seedDatabase() {
     data: { name: 'Horário 2026/27 S1', isMain: true },
   });
 
-  // 3. Criar Salas (Requisito 2)
+  // 3. Criar Salas (Requisito 4)
   const roomLab1 = await prisma.room.create({
     data: { name: 'Lab 1.10 (Informática)', capacity: 36, type: 'Laboratório' },
   });
@@ -74,7 +74,7 @@ export async function seedDatabase() {
     data: { name: 'Auditório Afonso de Barros', capacity: 80, type: 'Anfiteatro' },
   });
 
-  // 3. Criar Docentes (Requisito 3)
+  // 3. Criar Docentes (Requisito 8)
   const profCarlos = await prisma.professor.create({
     data: { name: 'Prof. Doutor Carlos Silva', email: 'carlos.silva@iscte-iul.pt' },
   });
@@ -132,7 +132,7 @@ export async function seedDatabase() {
       courseId: courseADS.id,
     },
   });
-  // Turno sobrelotado de propósito para demonstrar Requisito 3 (Desdobramento de Turma)
+  // Turno sobrelotado de propósito para demonstrar Requisito 8 (Desdobramento de Turma)
   const shiftADSPL2 = await prisma.shift.create({
     data: {
       name: 'ADS-PL2',
@@ -224,8 +224,8 @@ export async function seedDatabase() {
   // Segunda-feira: ADS PL2 (14:00 - 18:00)
   // CASO DE TESTE:
   // 1) Duração de 4 horas (viola MAX_3H_CONSECUTIVAS)
-  // 2) Não tem sala atribuída (Requisito 2: Alocação pendente)
-  // 3) Tem 68 inscritos (Requisito 3: Sugestão de desdobramento)
+  // 2) Não tem sala atribuída (Requisito 4: Alocação pendente)
+  // 3) Tem 68 inscritos (Requisito 8: Sugestão de desdobramento)
   await prisma.lesson.create({
     data: {
       date: dSegunda,
@@ -298,7 +298,7 @@ export async function seedDatabase() {
     },
   });
 
-  // Quinta-feira: BDA PL1 (14:00 - 16:00) -> Sem sala atribuída (Pendente para Requisito 2)
+  // Quinta-feira: BDA PL1 (14:00 - 16:00) -> Sem sala atribuída (Pendente para Requisito 4)
   const dQuinta = new Date(dSegunda);
   dQuinta.setDate(dSegunda.getDate() + 3);
 

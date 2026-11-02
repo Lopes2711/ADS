@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
+// @next-codemod-ignore
+export const instant = false;
+
 
 export default async function MudancasPage() {
   const [shifts, professors, lessons] = await Promise.all([
@@ -26,7 +29,7 @@ export default async function MudancasPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Mudanças Ad-hoc &amp; Impacto</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 3 — Avaliação de impacto de desdobramentos de turmas e trocas de docentes</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 8 — Avaliação de impacto de desdobramentos de turmas e trocas de docentes</p>
         </div>
         <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>

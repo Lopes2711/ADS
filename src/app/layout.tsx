@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: 'Projeto 1 — Arquitetura e Desenho de Software',
 };
 
+// @next-codemod-ignore
+export const instant = false;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt">

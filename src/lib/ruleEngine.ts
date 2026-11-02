@@ -16,7 +16,7 @@ export interface EvaluationResult {
 }
 
 /**
- * Motor de Validação de Regras de Horários (Requisito 1 & 3)
+ * Motor de Validação de Regras de Horários (Requisito 2 & 8)
  * Avalia o horário atual face às regras ativas na base de dados.
  */
 export async function evaluateScheduleRules(): Promise<EvaluationResult> {
@@ -80,7 +80,7 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
       }
     }
 
-    // REGRA: Sala não alocada (Requisito 2)
+    // REGRA: Sala não alocada (Requisito 4)
     if (!l1.room) {
       violationsToInsert.push({
         lessonId: l1.id,

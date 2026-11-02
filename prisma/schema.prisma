@@ -84,18 +84,18 @@ model Shift {
   id               String        @id @default(uuid())
   name             String        // Ex: "PL1", "PL1A"
   type             String?       // Ex: "T", "TP", "PL"
-  enrolledStudents Int           // Requisito 2: Número de estudantes inscritos
-  roomTypeReq      String?       // Requisito 2: Tipo de sala exigida (Ex: "Laboratório")
+  enrolledStudents Int           // Requisito 4: Número de estudantes inscritos
+  roomTypeReq      String?       // Requisito 4: Tipo de sala exigida (Ex: "Laboratório")
 
   course           Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId         String
 
-  // Requisito 3: Suporte a desdobramento de turnos (Auto-relação pai/filho)
+  // Requisito 8: Suporte a desdobramento de turnos (Auto-relação pai/filho)
   parentShift      Shift?        @relation("ShiftSplit", fields: [parentShiftId], references: [id])
   parentShiftId    String?
   childShifts      Shift[]       @relation("ShiftSplit")
 
-  // Requisito 2: Requisitos específicos de equipamento/infraestrutura
+  // Requisito 4: Requisitos específicos de equipamento/infraestrutura
   requiredFeatures RoomFeature[] @relation("ShiftRequiredFeatures")
 
   lessons          Lesson[]
@@ -108,14 +108,14 @@ model Room {
   id          String        @id @default(uuid())
   name        String        @unique // Ex: "C1.03", "Auditório C"
   building    String?       // Ex: "Edifício 1"
-  capacity    Int           // Requisito 2: Lotação da sala
+  capacity    Int           // Requisito 4: Lotação da sala
   type        String        // Ex: "Normal", "Laboratório", "Anfiteatro"
 
   features    RoomFeature[] @relation("RoomFeatures")
   lessons     Lesson[]
 }
 
-// Características técnicas e de acessibilidade das salas (Requisito 2)
+// Características técnicas e de acessibilidade das salas (Requisito 4)
 model RoomFeature {
   id          String   @id @default(uuid())
   name        String   @unique // Ex: "Projetor", "Quadros Duplos", "Computadores"
@@ -141,10 +141,10 @@ model Lesson {
   shiftId            String
 
   room               Room?       @relation(fields: [roomId], references: [id])
-  roomId             String?     // Opcional para permitir alocação/sugestão posterior (Requisito 2)
+  roomId             String?     // Opcional para permitir alocação/sugestão posterior (Requisito 4)
 
   professor          Professor?  @relation(fields: [professorId], references: [id])
-  professorId        String?     // Opcional/Mutável para mudanças adhoc (Requisito 3)
+  professorId        String?     // Opcional/Mutável para mudanças adhoc (Requisito 8)
 
   // Violações associadas a esta aula
   violations         Violation[] @relation("MainLessonViolations")
@@ -173,7 +173,7 @@ model Violation {
   ruleCode         String?
   createdAt        DateTime  @default(now())
 
-  // Permite avaliar a qualidade de um cenário específico (Requisito 3)
+  // Permite avaliar a qualidade de um cenário específico (Requisito 8)
   schedule         Schedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   scheduleId       String
 

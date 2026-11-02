@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
+// @next-codemod-ignore
+export const instant = false;
+
 
 export default async function HorariosPage() {
   const lessons = await prisma.lesson.findMany({

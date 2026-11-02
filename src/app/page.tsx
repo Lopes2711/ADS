@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
+// @next-codemod-ignore
+export const instant = false;
+
 
 export default async function HomePage() {
   const [lessonsCount, coursesCount, roomsCount, rulesCount, violations] = await Promise.all([
@@ -57,15 +60,15 @@ export default async function HomePage() {
             <div className="text-sm text-slate-500 mt-1">Grelha com todas as aulas, horários e docentes atribuídos.</div>
           </Link>
           <Link href="/regras" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-            <div className="font-semibold text-slate-900">⚖️ Regras &amp; Violações (Req. 1)</div>
+            <div className="font-semibold text-slate-900">⚖️ Regras &amp; Violações (Req. 2)</div>
             <div className="text-sm text-slate-500 mt-1">Catálogo de regras vigentes e violações ativas detetadas.</div>
           </Link>
           <Link href="/alocacao" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-            <div className="font-semibold text-slate-900">🏫 Alocação de Salas (Req. 2)</div>
+            <div className="font-semibold text-slate-900">🏫 Alocação de Salas (Req. 4)</div>
             <div className="text-sm text-slate-500 mt-1">Conformidade de salas, capacidade vs inscritos e tipos.</div>
           </Link>
           <Link href="/mudancas" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-            <div className="font-semibold text-slate-900">⚡ Mudanças Ad-hoc (Req. 3)</div>
+            <div className="font-semibold text-slate-900">⚡ Mudanças Ad-hoc (Req. 8)</div>
             <div className="text-sm text-slate-500 mt-1">Turnos sobrelotados, desdobramentos e sobreposições.</div>
           </Link>
         </div>

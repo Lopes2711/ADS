@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { seedDataAction } from '@/app/actions';
 
+// @next-codemod-ignore
+export const instant = false;
+
 
 export default async function ImportarPage() {
   const [coursesCount, shiftsCount, professorsCount, roomsCount, lessonsCount, rulesCount, violationsCount] =
@@ -20,7 +23,7 @@ export default async function ImportarPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Transformação &amp; Estado da BD</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 1 — Registos armazenados no SQLite via Prisma</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 2 — Registos armazenados no SQLite via Prisma</p>
         </div>
         <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>

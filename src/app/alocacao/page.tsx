@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
+// @next-codemod-ignore
+export const instant = false;
+
 
 export default async function AlocacaoPage() {
   const [lessons, rooms] = await Promise.all([
@@ -22,7 +25,7 @@ export default async function AlocacaoPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Alocação de Salas</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 2 — Cruzamento de requisitos pedagógicos e salas disponíveis</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 4 — Cruzamento de requisitos pedagógicos e salas disponíveis</p>
         </div>
         <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
