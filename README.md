@@ -54,16 +54,25 @@ This command will:
 - Apply all existing database migrations located in `prisma/migrations/`.
 - Generate the latest type-safe `@prisma/client`.
 
-#### Step 5: Start the Development Server
+#### Step 5: Populate the Database with Demo Data (Seed)
+Run the seed script to lightly populate the database with sample data for testing the project features (Requirements 2, 4, and 8):
+```bash
+npm run seed
+```
+This script (`prisma/seed.ts`) clears existing records and inserts:
+- **5 Rules** (`MAX_3H_CONSECUTIVAS`, `PROFESSOR_OVERLAP`, `ROOM_CAPACITY`, `ROOM_TYPE`, `MISSING_ROOM`)
+- **6 Rooms** (auditoriums, labs, normal classrooms)
+- **4 Professors**, **4 Courses (UCs)**, and **8 Shifts**
+- **10 Lessons** and **6 Active Violations** to test rule validation, room allocation, and ad-hoc schedule changes.
+
+#### Step 6: Start the Development Server
 ```bash
 npm run dev
 ```
 
-#### Step 6: Access the App
+#### Step 7: Access the App
 Open your browser and navigate to:
 👉 **[http://localhost:3000](http://localhost:3000)**
-
-You should see the User Directory interface where you can create and view users.
 
 ---
 
@@ -72,6 +81,7 @@ You should see the User Directory interface where you can create and view users.
 | Command | Description |
 | :--- | :--- |
 | `npm run dev` | Starts the Next.js development server with Turbopack at `http://localhost:3000` |
+| `npm run seed` | Lightly populates the local SQLite database with demo courses, rooms, lessons, rules, and violations |
 | `npm run build` | Builds the application for production |
 | `npm run start` | Runs the compiled production build |
 | `npm run lint` | Runs ESLint to check for code quality and style issues |
