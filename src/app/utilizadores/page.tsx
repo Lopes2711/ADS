@@ -1,4 +1,4 @@
-import { createUserAction } from '@/app/actions';
+import { approveRoleRequestAction, createUserAction } from '@/app/actions';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
@@ -27,7 +27,14 @@ export default async function UsersPage() {
 
   const users = await prisma.user.findMany({
     orderBy: { id: 'asc' },
-    select: { id: true, name: true, email: true, role: true, sessions: { select: { id: true } } },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      sessions: { select: { id: true } },
+      role_management: { select: { id: true, requested_role: true, approved: true } },
+    },
   });
 
   return (
@@ -63,7 +70,29 @@ export default async function UsersPage() {
           </div>
         ))}
       </div>
+
+      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div className="px-4 py-3 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+          Pedidos de alteração de role
+        </div>
+        {users.filter((user) => user.role_management && !user.role_management.approved).length === 0 ? (
+          <p className="px-4 py-3 text-sm text-slate-500">Não existem pedidos pendentes.</p>
+        ) : (
+          users
+            .filter((user) => user.role_management && !user.role_management.approved)
+            .map((user) => (
+              <div key={user.role_management!.id} className="flex items-center justify-between gap-4 px-4 py-3 border-t text-sm">
+                <span>{user.name} — solicitar: <strong>{user.role_management!.requested_role}</strong></span>
+                <form action={approveRoleRequestAction}>
+                  <input type="hidden" name="requestId" value={user.role_management!.id} />
+                  <button type="submit" className="bg-emerald-600 text-white rounded px-3 py-1.5 hover:bg-emerald-700">
+                    Aprovar
+                  </button>
+                </form>
+              </div>
+            ))
+        )}
+      </div>
     </div>
   );
 }
-

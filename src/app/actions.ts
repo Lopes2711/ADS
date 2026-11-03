@@ -50,36 +50,58 @@ export async function requestRoleAction(formData: FormData): Promise<void> {
   }
 
   await withAuditActor(currentUser.id, async () => {
-    const pendingRequest = currentUser.asked_role
-      ? await prisma.roleManagement.findUnique({ where: { user_id: currentUser.id } })
-      : null;
+    const pendingRequest = await prisma.roleManagement.findUnique({
+      where: { user_id: currentUser.id },
+    });
 
     if (pendingRequest) {
-      await prisma.$transaction([
-        prisma.roleManagement.update({
-          where: { id: pendingRequest.id },
-          data: { requested_role },
-        }),
-        prisma.user.update({
-          where: { id: currentUser.id },
-          data: { asked_role: requested_role },
-        }),
-      ]);
+      await prisma.roleManagement.update({
+        where: { id: pendingRequest.id },
+        data: { requested_role, approved: false },
+      });
     } else {
-      await prisma.$transaction([
-        prisma.roleManagement.create({
-          data: { user_id: currentUser.id, requested_role },
-        }),
-        prisma.user.update({
-          where: { id: currentUser.id },
-          data: { asked_role: requested_role },
-        }),
-      ]);
+      await prisma.roleManagement.create({
+        data: { user_id: currentUser.id, requested_role, approved: false },
+      });
     }
   });
 
   console.info(`[role-request] user_id=${currentUser.id} requested_role=${requested_role}`);
   redirect('/home');
+}
+
+export async function approveRoleRequestAction(formData: FormData): Promise<void> {
+  const currentUser = await requireCurrentUser();
+  if (currentUser.role !== 'ADMIN') {
+    throw new Error('Apenas administradores podem aprovar pedidos de role.');
+  }
+
+  const requestId = Number(formData.get('requestId'));
+  if (!Number.isInteger(requestId) || requestId <= 0) {
+    throw new Error('Pedido de role inválido.');
+  }
+
+  await withAuditActor(currentUser.id, async () => {
+    const request = await prisma.roleManagement.findUnique({
+      where: { id: requestId },
+    });
+    if (!request) {
+      throw new Error('Pedido de role não encontrado.');
+    }
+
+    await prisma.$transaction([
+      prisma.roleManagement.update({
+        where: { id: request.id },
+        data: { approved: true },
+      }),
+      prisma.user.update({
+        where: { id: request.user_id },
+        data: { role: request.requested_role },
+      }),
+    ]);
+  });
+
+  revalidatePath('/utilizadores');
 }
 
 /**
