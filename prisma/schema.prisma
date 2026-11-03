@@ -15,15 +15,15 @@ datasource db {
 // (SQLite does not support enums — stored as plain String)
 
 model User {
-  id        Int        @id @default(autoincrement())
-  name      String
-  email     String     @unique
-  password  String // Hash da palavra-passe
-  role      String     @default("STUDENT") // ADMIN | COORDINATOR | PROFESSOR | STUDENT
-  asked_role String?
+  id              Int             @id @default(autoincrement())
+  name            String
+  email           String          @unique
+  password        String // Hash da palavra-passe
+  role            String          @default("STUDENT") // ADMIN | COORDINATOR | PROFESSOR | STUDENT
+  asked_role      String?
   // Relação opcional de 1-para-1 com o perfil de Professor (se role == PROFESSOR)
-  professor Professor?
-  sessions  Session[]
+  professor       Professor?
+  sessions        Session[]
   role_management RoleManagement?
 
   @@map("User")
@@ -33,8 +33,8 @@ model User {
 // HORÁRIO / CENÁRIO DE SIMULAÇÃO (Requisitos 2, 4 e 8)
 // ------------------------------------------------------
 model Schedule {
-  id        Int      @id @default(autoincrement())
-  name      String // Ex: "Horário Oficial 2024/2025 S1", "Simulação Desdobramento PL1"
+  id         Int      @id @default(autoincrement())
+  name       String // Ex: "Horário Oficial 2024/2025 S1", "Simulação Desdobramento PL1"
   is_main    Boolean  @default(false) // Indica se é o horário ativo/oficial
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -67,7 +67,7 @@ model Professor {
   email String @unique
 
   // Relação com a conta de utilizador do sistema
-  user   User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user    User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id Int?  @unique
 
   lessons          Lesson[]
@@ -78,12 +78,12 @@ model Professor {
 
 // Bloqueios de horário do docente (Ex: Terça-feira à tarde indisponível)
 model ProfessorUnavailability {
-  id        Int      @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   day_of_week Int // 1 (Segunda) a 7 (Domingo)
-  start_time DateTime
-  end_time DateTime
+  start_time  DateTime
+  end_time    DateTime
 
-  professor   Professor @relation(fields: [professor_id], references: [id], onDelete: Cascade)
+  professor    Professor @relation(fields: [professor_id], references: [id], onDelete: Cascade)
   professor_id Int
 
   @@map("Professor_Unavailability")
@@ -91,19 +91,19 @@ model ProfessorUnavailability {
 
 // Representa um Turno/Turma de uma UC (Ex: "MEA1", "PL1")
 model Shift {
-  id               Int     @id @default(autoincrement())
-  name             String // Ex: "PL1", "PL1A"
-  type             String? // Ex: "T", "TP", "PL"
+  id                Int     @id @default(autoincrement())
+  name              String // Ex: "PL1", "PL1A"
+  type              String? // Ex: "T", "TP", "PL"
   enrolled_students Int // Requisito 4: Número de estudantes inscritos
-  room_type_req      String? // Requisito 4: Tipo de sala exigida (Ex: "Laboratório")
+  room_type_req     String? // Requisito 4: Tipo de sala exigida (Ex: "Laboratório")
 
-  course   Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
   course_id Int
 
   // Requisito 8: Suporte a desdobramento de turnos (Auto-relação pai/filho)
-  parentShift   Shift?  @relation("ShiftSplit", fields: [parent_shift_id], references: [id])
+  parentShift     Shift?  @relation("ShiftSplit", fields: [parent_shift_id], references: [id])
   parent_shift_id Int?
-  childShifts   Shift[] @relation("ShiftSplit")
+  childShifts     Shift[] @relation("ShiftSplit")
 
   // Requisito 4: Requisitos específicos de equipamento/infraestrutura
   requiredFeatures RoomFeature[] @relation("ShiftRequiredFeatures")
@@ -144,22 +144,22 @@ model RoomFeature {
 // INSTÂNCIA DA AULA NO TEMPO (Requisitos 2, 4 e 8)
 // ------------------------------------------------------
 model Lesson {
-  id        Int      @id @default(autoincrement())
-  date      DateTime // Data da aula
+  id         Int      @id @default(autoincrement())
+  date       DateTime // Data da aula
   start_time DateTime // Hora de início
-  end_time DateTime // Hora de fim
+  end_time   DateTime // Hora de fim
 
   // Relação com o cenário/versão de horário
-  schedule   Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+  schedule    Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
   schedule_id Int
 
-  shift   Shift @relation(fields: [shift_id], references: [id], onDelete: Cascade)
+  shift    Shift @relation(fields: [shift_id], references: [id], onDelete: Cascade)
   shift_id Int
 
-  room   Room? @relation(fields: [room_id], references: [id])
+  room    Room? @relation(fields: [room_id], references: [id])
   room_id Int? // Opcional para permitir alocação/sugestão posterior (Requisito 4)
 
-  professor   Professor? @relation(fields: [professor_id], references: [id])
+  professor    Professor? @relation(fields: [professor_id], references: [id])
   professor_id Int? // Opcional/Mutável para mudanças adhoc (Requisito 8)
 
   // Violações associadas a esta aula
@@ -177,7 +177,7 @@ model Rule {
   code        String  @unique // Ex: "MAX_3H_CONSECUTIVAS", "OVERLAP_PROFESSOR", "CAPACITY_EXCEEDED"
   name        String
   description String
-  is_active    Boolean @default(true)
+  is_active   Boolean @default(true)
   severity    String  @default("ERRO") // "ERRO" ou "AVISO"
 
   // Configurações em JSON (Ex: '{"maxDurationMinutes": 180}')
@@ -193,28 +193,28 @@ model Violation {
   description String // Ex: "Aula excede 3h seguidas", "Conflito de sobreposição"
   severity    String // "ERRO" ou "AVISO"
   rule        Rule?    @relation(fields: [rule_code], references: [code], onDelete: SetNull, onUpdate: Cascade)
-  rule_code    String?
-  created_at   DateTime @default(now())
+  rule_code   String?
+  created_at  DateTime @default(now())
 
   // Permite avaliar a qualidade de um cenário específico (Requisito 8)
-  schedule   Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+  schedule    Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
   schedule_id Int
 
   // Aula afetada principal
-  lesson   Lesson @relation("MainLessonViolations", fields: [lesson_id], references: [id], onDelete: Cascade)
+  lesson    Lesson @relation("MainLessonViolations", fields: [lesson_id], references: [id], onDelete: Cascade)
   lesson_id Int
 
   // Aula secundária envolvida no conflito (se aplicável)
-  relatedLesson   Lesson? @relation("RelatedLessonViolations", fields: [related_lesson_id], references: [id], onDelete: SetNull)
+  relatedLesson     Lesson? @relation("RelatedLessonViolations", fields: [related_lesson_id], references: [id], onDelete: SetNull)
   related_lesson_id Int?
 
   @@map("Violation")
 }
 
 model Log {
-  id        Int      @id @default(autoincrement())
-  action    String
-  entity    String
+  id         Int      @id @default(autoincrement())
+  action     String
+  entity     String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   created_by Int?
@@ -224,7 +224,7 @@ model Log {
 }
 
 model RoleManagement {
-  id            Int    @id @default(autoincrement())
+  id             Int    @id @default(autoincrement())
   user_id        Int    @unique
   requested_role String
 
@@ -234,7 +234,7 @@ model RoleManagement {
 }
 
 model Session {
-  id        String   @id
+  id         String   @id
   user_id    Int
   expires_at DateTime
   created_at DateTime @default(now())
@@ -243,5 +243,3 @@ model Session {
 
   @@map("Session")
 }
-
-
