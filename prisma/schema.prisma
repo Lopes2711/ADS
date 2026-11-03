@@ -163,13 +163,16 @@ model Rule {
   severity    String   @default("ERRO") // "ERRO" ou "AVISO"
 
   // Configurações em JSON (Ex: '{"maxDurationMinutes": 180}')
-  parameters  String?  
+  parameters  String?
+
+  violations  Violation[]
 }
 
 model Violation {
   id               String    @id @default(uuid())
   description      String    // Ex: "Aula excede 3h seguidas", "Conflito de sobreposição"
   severity         String    // "ERRO" ou "AVISO"
+  rule             Rule?    @relation(fields: [ruleCode], references: [code], onDelete: Cascade, onUpdate: Cascade)
   ruleCode         String?
   createdAt        DateTime  @default(now())
 
