@@ -34,7 +34,7 @@ export async function reevaluateScheduleAction(): Promise<void> {
 /**
  * Requisito 2: Ativar ou desativar uma regra de funcionamento
  */
-export async function toggleRuleAction(ruleId: string, isActive: boolean): Promise<void> {
+export async function toggleRuleAction(ruleId: number, isActive: boolean): Promise<void> {
   await prisma.rule.update({
     where: { id: ruleId },
     data: { isActive },
@@ -48,10 +48,10 @@ export async function toggleRuleAction(ruleId: string, isActive: boolean): Promi
 /**
  * Requisito 4: Alocar / Atribuir uma sala a uma aula
  */
-export async function allocateRoomAction(lessonId: string, roomId: string): Promise<void> {
+export async function allocateRoomAction(lessonId: number, roomId: number | null): Promise<void> {
   await prisma.lesson.update({
     where: { id: lessonId },
-    data: { roomId: roomId ? roomId : null },
+    data: { roomId },
   });
   await evaluateScheduleRules();
   revalidatePath('/alocacao');
@@ -63,7 +63,7 @@ export async function allocateRoomAction(lessonId: string, roomId: string): Prom
 /**
  * Requisito 8: Desdobramento de turno / turma (ex: turma com muitos inscritos)
  */
-export async function splitShiftAction(shiftId: string): Promise<void> {
+export async function splitShiftAction(shiftId: number): Promise<void> {
   const shift = await prisma.shift.findUnique({
     where: { id: shiftId },
     include: { course: true, lessons: true },
@@ -126,7 +126,7 @@ export async function splitShiftAction(shiftId: string): Promise<void> {
 /**
  * Requisito 8: Mudança de Professor de uma Aula / UC
  */
-export async function changeProfessorAction(lessonId: string, newProfessorId: string): Promise<void> {
+export async function changeProfessorAction(lessonId: number, newProfessorId: number): Promise<void> {
   await prisma.lesson.update({
     where: { id: lessonId },
     data: { professorId: newProfessorId },

@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 import { allocateRoomAction } from '@/app/actions';
 
 interface CandidateRoom {
-  id: string;
+  id: number;
   name: string;
   capacity: number;
   type: string;
@@ -15,8 +15,8 @@ interface CandidateRoom {
 }
 
 interface RoomAssignerProps {
-  lessonId: string;
-  currentRoomId: string | null;
+  lessonId: number;
+  currentRoomId: number | null;
   candidateRooms: CandidateRoom[];
 }
 
@@ -27,7 +27,7 @@ export function RoomAssigner({
 }: RoomAssignerProps) {
   const [isPending, startTransition] = useTransition();
 
-  const handleSelectRoom = (roomId: string) => {
+  const handleSelectRoom = (roomId: number | null) => {
     startTransition(async () => {
       await allocateRoomAction(lessonId, roomId);
     });
@@ -87,7 +87,7 @@ export function RoomAssigner({
               <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between">
                 {isCurrent ? (
                   <button
-                    onClick={() => handleSelectRoom('')}
+                    onClick={() => handleSelectRoom(null)}
                     disabled={isPending}
                     className="text-[11px] font-medium text-rose-600 hover:text-rose-800 transition cursor-pointer"
                   >
