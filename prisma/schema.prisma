@@ -15,222 +15,233 @@ datasource db {
 // (SQLite does not support enums — stored as plain String)
 
 model User {
-  id        Int      @id @default(autoincrement())
-  logId     Int?     @unique
+  id        Int        @id @default(autoincrement())
   name      String
-  email     String   @unique
-  password  String   // Hash da palavra-passe
-  role      String   @default("STUDENT") // ADMIN | COORDINATOR | PROFESSOR | STUDENT
+  email     String     @unique
+  password  String // Hash da palavra-passe
+  role      String     @default("STUDENT") // ADMIN | COORDINATOR | PROFESSOR | STUDENT
+  asked_role String?
   // Relação opcional de 1-para-1 com o perfil de Professor (se role == PROFESSOR)
   professor Professor?
-  log       Log?      @relation(fields: [logId], references: [id], onDelete: SetNull)
+  sessions  Session[]
+  role_management RoleManagement?
 
-  createdLogs Log[]   @relation("LogCreatedBy")
-  updatedLogs Log[]   @relation("LogUpdatedBy")
+  @@map("User")
 }
 
 // ------------------------------------------------------
 // HORÁRIO / CENÁRIO DE SIMULAÇÃO (Requisitos 2, 4 e 8)
 // ------------------------------------------------------
 model Schedule {
-  id          Int         @id @default(autoincrement())
-  logId       Int?        @unique
-  name        String      // Ex: "Horário Oficial 2024/2025 S1", "Simulação Desdobramento PL1"
-  isMain      Boolean     @default(false) // Indica se é o horário ativo/oficial
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String // Ex: "Horário Oficial 2024/2025 S1", "Simulação Desdobramento PL1"
+  is_main    Boolean  @default(false) // Indica se é o horário ativo/oficial
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  lessons     Lesson[]
-  violations  Violation[]
-  log         Log?        @relation(fields: [logId], references: [id], onDelete: SetNull)
+  lessons    Lesson[]
+  violations Violation[]
+
+  @@map("Schedule")
 }
 
 // ------------------------------------------------------
 // ENTIDADES PRINCIPAIS E CURRICULARES
 // ------------------------------------------------------
 model Course {
-  id          Int      @id @default(autoincrement())
-  logId       Int?     @unique
-  name        String   // Ex: "Arquitetura de Software"
-  acronym     String   @unique // Ex: "ARQSOFT"
-  degree      String?  // Ex: "Licenciatura em Engenharia Informática"
-  year        Int?     // Ex: 1, 2 ou 3 (para validar sobreposição de aulas do mesmo ano)
-  semester    Int?     // Ex: 1 ou 2
+  id       Int     @id @default(autoincrement())
+  name     String // Ex: "Arquitetura de Software"
+  acronym  String  @unique // Ex: "ARQSOFT"
+  degree   String? // Ex: "Licenciatura em Engenharia Informática"
+  year     Int? // Ex: 1, 2 ou 3 (para validar sobreposição de aulas do mesmo ano)
+  semester Int? // Ex: 1 ou 2
 
-  shifts      Shift[]
-  log         Log?    @relation(fields: [logId], references: [id], onDelete: SetNull)
+  shifts Shift[]
+
+  @@map("Course")
 }
 
 model Professor {
-  id               Int                       @id @default(autoincrement())
-  logId            Int?                      @unique
-  name             String
-  email            String                    @unique
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
 
   // Relação com a conta de utilizador do sistema
-  user             User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId           Int?                      @unique
+  user   User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id Int?  @unique
 
   lessons          Lesson[]
   unavailabilities ProfessorUnavailability[]
-  log              Log?                      @relation(fields: [logId], references: [id], onDelete: SetNull)
+
+  @@map("Professor")
 }
 
 // Bloqueios de horário do docente (Ex: Terça-feira à tarde indisponível)
 model ProfessorUnavailability {
-  id          Int       @id @default(autoincrement())
-  logId       Int?     @unique
-  dayOfWeek   Int       // 1 (Segunda) a 7 (Domingo)
-  startTime   DateTime  
-  endTime     DateTime
+  id        Int      @id @default(autoincrement())
+  day_of_week Int // 1 (Segunda) a 7 (Domingo)
+  start_time DateTime
+  end_time DateTime
 
-  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  professorId Int
-  log         Log?      @relation(fields: [logId], references: [id], onDelete: SetNull)
+  professor   Professor @relation(fields: [professor_id], references: [id], onDelete: Cascade)
+  professor_id Int
+
+  @@map("Professor_Unavailability")
 }
 
 // Representa um Turno/Turma de uma UC (Ex: "MEA1", "PL1")
 model Shift {
-  id               Int           @id @default(autoincrement())
-  logId            Int?          @unique
-  name             String        // Ex: "PL1", "PL1A"
-  type             String?       // Ex: "T", "TP", "PL"
-  enrolledStudents Int           // Requisito 4: Número de estudantes inscritos
-  roomTypeReq      String?       // Requisito 4: Tipo de sala exigida (Ex: "Laboratório")
+  id               Int     @id @default(autoincrement())
+  name             String // Ex: "PL1", "PL1A"
+  type             String? // Ex: "T", "TP", "PL"
+  enrolled_students Int // Requisito 4: Número de estudantes inscritos
+  room_type_req      String? // Requisito 4: Tipo de sala exigida (Ex: "Laboratório")
 
-  course           Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId         Int
+  course   Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  course_id Int
 
   // Requisito 8: Suporte a desdobramento de turnos (Auto-relação pai/filho)
-  parentShift      Shift?        @relation("ShiftSplit", fields: [parentShiftId], references: [id])
-  parentShiftId    Int?
-  childShifts      Shift[]       @relation("ShiftSplit")
+  parentShift   Shift?  @relation("ShiftSplit", fields: [parent_shift_id], references: [id])
+  parent_shift_id Int?
+  childShifts   Shift[] @relation("ShiftSplit")
 
   // Requisito 4: Requisitos específicos de equipamento/infraestrutura
   requiredFeatures RoomFeature[] @relation("ShiftRequiredFeatures")
 
-  lessons          Lesson[]
-  log              Log?     @relation(fields: [logId], references: [id], onDelete: SetNull)
+  lessons Lesson[]
+
+  @@map("Shift")
 }
 
 // ------------------------------------------------------
 // INFRAESTRUTURA E SALAS (Requisito 4)
 // ------------------------------------------------------
 model Room {
-  id          Int           @id @default(autoincrement())
-  logId       Int?          @unique
-  name        String        @unique // Ex: "C1.03", "Auditório C"
-  building    String?       // Ex: "Edifício 1"
-  capacity    Int           // Requisito 4: Lotação da sala
-  type        String        // Ex: "Normal", "Laboratório", "Anfiteatro"
+  id       Int     @id @default(autoincrement())
+  name     String  @unique // Ex: "C1.03", "Auditório C"
+  building String? // Ex: "Edifício 1"
+  capacity Int // Requisito 4: Lotação da sala
+  type     String // Ex: "Normal", "Laboratório", "Anfiteatro"
 
-  features    RoomFeature[] @relation("RoomFeatures")
-  lessons     Lesson[]
-  log         Log?          @relation(fields: [logId], references: [id], onDelete: SetNull)
+  features RoomFeature[] @relation("RoomFeatures")
+  lessons  Lesson[]
+
+  @@map("Room")
 }
 
 // Características técnicas e de acessibilidade das salas (Requisito 4)
 model RoomFeature {
-  id          Int      @id @default(autoincrement())
-  logId       Int?     @unique
-  name        String   @unique // Ex: "Projetor", "Quadros Duplos", "Computadores"
+  id   Int    @id @default(autoincrement())
+  name String @unique // Ex: "Projetor", "Quadros Duplos", "Computadores"
 
-  rooms       Room[]   @relation("RoomFeatures")
-  shifts      Shift[]  @relation("ShiftRequiredFeatures")
-  log         Log?     @relation(fields: [logId], references: [id], onDelete: SetNull)
+  rooms  Room[]  @relation("RoomFeatures")
+  shifts Shift[] @relation("ShiftRequiredFeatures")
+
+  @@map("Room_Feature")
 }
 
 // ------------------------------------------------------
 // INSTÂNCIA DA AULA NO TEMPO (Requisitos 2, 4 e 8)
 // ------------------------------------------------------
 model Lesson {
-  id                 Int         @id @default(autoincrement())
-  logId              Int?        @unique
-  date               DateTime    // Data da aula
-  startTime          DateTime    // Hora de início
-  endTime            DateTime    // Hora de fim
+  id        Int      @id @default(autoincrement())
+  date      DateTime // Data da aula
+  start_time DateTime // Hora de início
+  end_time DateTime // Hora de fim
 
   // Relação com o cenário/versão de horário
-  schedule           Schedule    @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  scheduleId         Int
+  schedule   Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+  schedule_id Int
 
-  shift              Shift       @relation(fields: [shiftId], references: [id], onDelete: Cascade)
-  shiftId            Int
+  shift   Shift @relation(fields: [shift_id], references: [id], onDelete: Cascade)
+  shift_id Int
 
-  room               Room?       @relation(fields: [roomId], references: [id])
-  roomId             Int?        // Opcional para permitir alocação/sugestão posterior (Requisito 4)
+  room   Room? @relation(fields: [room_id], references: [id])
+  room_id Int? // Opcional para permitir alocação/sugestão posterior (Requisito 4)
 
-  professor          Professor?  @relation(fields: [professorId], references: [id])
-  professorId        Int?        // Opcional/Mutável para mudanças adhoc (Requisito 8)
+  professor   Professor? @relation(fields: [professor_id], references: [id])
+  professor_id Int? // Opcional/Mutável para mudanças adhoc (Requisito 8)
 
   // Violações associadas a esta aula
-  violations         Violation[] @relation("MainLessonViolations")
-  relatedViolations  Violation[] @relation("RelatedLessonViolations")
-  log                Log?        @relation(fields: [logId], references: [id], onDelete: SetNull)
+  violations        Violation[] @relation("MainLessonViolations")
+  relatedViolations Violation[] @relation("RelatedLessonViolations")
+
+  @@map("Lesson")
 }
 
 // ------------------------------------------------------
 // GESTÃO DE REGRAS E QUALIDADE DO HORÁRIO (Requisitos 2 e 8)
 // ------------------------------------------------------
 model Rule {
-  id          Int      @id @default(autoincrement())
-  logId       Int?     @unique
-  code        String   @unique // Ex: "MAX_3H_CONSECUTIVAS", "OVERLAP_PROFESSOR", "CAPACITY_EXCEEDED"
+  id          Int     @id @default(autoincrement())
+  code        String  @unique // Ex: "MAX_3H_CONSECUTIVAS", "OVERLAP_PROFESSOR", "CAPACITY_EXCEEDED"
   name        String
   description String
-  isActive    Boolean  @default(true)
-  severity    String   @default("ERRO") // "ERRO" ou "AVISO"
+  is_active    Boolean @default(true)
+  severity    String  @default("ERRO") // "ERRO" ou "AVISO"
 
   // Configurações em JSON (Ex: '{"maxDurationMinutes": 180}')
-  parameters  String?
+  parameters String?
 
-  violations  Violation[]
-  log         Log?     @relation(fields: [logId], references: [id], onDelete: SetNull)
+  violations Violation[]
+
+  @@map("Rule")
 }
 
 model Violation {
-  id               Int       @id @default(autoincrement())
-  logId            Int?      @unique
-  description      String    // Ex: "Aula excede 3h seguidas", "Conflito de sobreposição"
-  severity         String    // "ERRO" ou "AVISO"
-  rule             Rule?    @relation(fields: [ruleCode], references: [code], onDelete: SetNull, onUpdate: Cascade)
-  ruleCode         String?
-  createdAt        DateTime  @default(now())
+  id          Int      @id @default(autoincrement())
+  description String // Ex: "Aula excede 3h seguidas", "Conflito de sobreposição"
+  severity    String // "ERRO" ou "AVISO"
+  rule        Rule?    @relation(fields: [rule_code], references: [code], onDelete: SetNull, onUpdate: Cascade)
+  rule_code    String?
+  created_at   DateTime @default(now())
 
   // Permite avaliar a qualidade de um cenário específico (Requisito 8)
-  schedule         Schedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  scheduleId       Int
+  schedule   Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+  schedule_id Int
 
   // Aula afetada principal
-  lesson           Lesson    @relation("MainLessonViolations", fields: [lessonId], references: [id], onDelete: Cascade)
-  lessonId         Int
+  lesson   Lesson @relation("MainLessonViolations", fields: [lesson_id], references: [id], onDelete: Cascade)
+  lesson_id Int
 
   // Aula secundária envolvida no conflito (se aplicável)
-  relatedLesson    Lesson?   @relation("RelatedLessonViolations", fields: [relatedLessonId], references: [id], onDelete: SetNull)
-  relatedLessonId  Int?
-  log              Log?      @relation(fields: [logId], references: [id], onDelete: SetNull)
+  relatedLesson   Lesson? @relation("RelatedLessonViolations", fields: [related_lesson_id], references: [id], onDelete: SetNull)
+  related_lesson_id Int?
+
+  @@map("Violation")
 }
 
 model Log {
   id        Int      @id @default(autoincrement())
   action    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy Int?
-  updatedBy Int?
+  entity    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
 
-  createdByUser User? @relation("LogCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
-  updatedByUser User? @relation("LogUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
-
-  user                    User?
-  schedule                Schedule?
-  course                  Course?
-  professor               Professor?
-  professorUnavailability ProfessorUnavailability?
-  shift                   Shift?
-  room                    Room?
-  roomFeature             RoomFeature?
-  lesson                  Lesson?
-  rule                    Rule?
-  violation               Violation?
+  @@map("Log")
 }
+
+model RoleManagement {
+  id            Int    @id @default(autoincrement())
+  user_id        Int    @unique
+  requested_role String
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("Role_Managment")
+}
+
+model Session {
+  id        String   @id
+  user_id    Int
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("Session")
+}
+
+

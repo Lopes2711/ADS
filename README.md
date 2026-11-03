@@ -48,11 +48,24 @@ DATABASE_URL="file:./dev.db"
 Run Prisma migrations to set up the local SQLite database and generate the Prisma Client:
 ```bash
 npx prisma migrate dev
+npm run seed
 ```
 This command will:
 - Create the local SQLite database file (`prisma/dev.db`) if it doesn't already exist.
-- Apply all existing database migrations located in `prisma/migrations/`.
+- Apply only the migrations that are still pending in `prisma/migrations/`.
+- Preserve the data already stored in the local database.
 - Generate the latest type-safe `@prisma/client`.
+- Seed the development data (the seed command also creates the admin account).
+
+The default development credentials are:
+
+```text
+Email: admin@ads.local
+Password: Admin123!
+```
+
+Set `SEED_ADMIN_PASSWORD` in `.env` before running the seed if you want another
+development password.
 
 #### Step 5: Start the Development Server
 ```bash
@@ -63,7 +76,8 @@ npm run dev
 Open your browser and navigate to:
 👉 **[http://localhost:3000](http://localhost:3000)**
 
-You should see the User Directory interface where you can create and view users.
+Sign in at `/login`. Mutating operations require an authenticated session and
+are recorded in the `Log` table with the authenticated user as the actor.
 
 ---
 
@@ -76,7 +90,7 @@ You should see the User Directory interface where you can create and view users.
 | `npm run start` | Runs the compiled production build |
 | `npm run lint` | Runs ESLint to check for code quality and style issues |
 | `npx prisma studio` | Opens an interactive web GUI at `http://localhost:5555` to inspect and edit database records |
-| `npx prisma migrate dev` | Applies new or pending database migrations and updates Prisma Client |
+| `npx prisma migrate dev` | Applies new or pending database migrations without resetting existing data |
 | `npx prisma generate` | Regenerates Prisma Client types (useful after schema updates) |
 
 ---
@@ -124,11 +138,12 @@ npx prisma generate
 ```
 
 ### Resetting the Database
-To reset your local development database to a clean state with fresh migrations:
+Only use this command when you intentionally want to delete all local data and rebuild
+the database from the migration history:
 ```bash
 npx prisma migrate reset
 ```
-*(Warning: This will clear all data in your local `dev.db` file.)*
+*(Warning: This permanently clears all data in your local `dev.db` file.)*
 
 ### Port 3000 is Already in Use
 If port 3000 is occupied by another service:

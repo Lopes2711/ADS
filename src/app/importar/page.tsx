@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { seedDataAction } from '@/app/actions';
+import { requireNonStudentUser } from '@/lib/auth';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function ImportarPage() {
+  await requireNonStudentUser();
   const [coursesCount, shiftsCount, professorsCount, roomsCount, lessonsCount, rulesCount, violationsCount] =
     await Promise.all([
       prisma.course.count(),
@@ -25,7 +27,7 @@ export default async function ImportarPage() {
           <h1 className="text-2xl font-bold text-slate-900">Transformação &amp; Estado da BD</h1>
           <p className="text-slate-500 text-sm mt-1">Requisito 2 — Registos armazenados no SQLite via Prisma</p>
         </div>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
+        <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
 
       {/* Tabela de Contagem dos Registos */}

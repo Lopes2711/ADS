@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { requireNonStudentUser } from '@/lib/auth';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function AlocacaoPage() {
+  await requireNonStudentUser();
   const [lessons, rooms] = await Promise.all([
     prisma.lesson.findMany({
       include: {
@@ -13,7 +15,7 @@ export default async function AlocacaoPage() {
         room: true,
         professor: true,
       },
-      orderBy: { startTime: 'asc' },
+      orderBy: { start_time: 'asc' },
     }),
     prisma.room.findMany({
       orderBy: { capacity: 'desc' },
@@ -27,7 +29,7 @@ export default async function AlocacaoPage() {
           <h1 className="text-2xl font-bold text-slate-900">Alocação de Salas</h1>
           <p className="text-slate-500 text-sm mt-1">Requisito 4 — Cruzamento de requisitos pedagógicos e salas disponíveis</p>
         </div>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
+        <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
 
       {/* Salas do Campus */}
@@ -63,8 +65,8 @@ export default async function AlocacaoPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {lessons.map((lesson) => {
-                const enrolled = lesson.shift.enrolledStudents;
-                const reqType = lesson.shift.roomTypeReq;
+                const enrolled = lesson.shift.enrolled_students;
+                const reqType = lesson.shift.room_type_req;
                 const room = lesson.room;
 
                 const isCapacityOk = room ? room.capacity >= enrolled : false;

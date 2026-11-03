@@ -6,8 +6,8 @@ import { splitShiftAction, changeProfessorAction } from '@/app/actions';
 interface ShiftItem {
   id: number;
   name: string;
-  enrolledStudents: number;
-  roomTypeReq: string | null;
+  enrolled_students: number;
+  room_type_req: string | null;
   courseAcronym: string;
   courseName: string;
 }
@@ -21,11 +21,11 @@ interface ProfessorItem {
 interface LessonItem {
   id: number;
   date: string;
-  startTime: string;
-  endTime: string;
+  start_time: string;
+  end_time: string;
   courseAcronym: string;
   shiftName: string;
-  enrolledStudents: number;
+  enrolled_students: number;
   currentProfessorId: number | null;
   currentProfessorName: string | null;
 }
@@ -59,14 +59,14 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
 
   let professorConflict: LessonItem | null = null;
   if (selectedLesson && targetProfId) {
-    const lStart = new Date(selectedLesson.startTime).getTime();
-    const lEnd = new Date(selectedLesson.endTime).getTime();
+    const lStart = new Date(selectedLesson.start_time).getTime();
+    const lEnd = new Date(selectedLesson.end_time).getTime();
 
     for (const other of lessons) {
       if (other.id === selectedLesson.id) continue;
       if (other.currentProfessorId === targetProfId) {
-        const oStart = new Date(other.startTime).getTime();
-        const oEnd = new Date(other.endTime).getTime();
+        const oStart = new Date(other.start_time).getTime();
+        const oEnd = new Date(other.end_time).getTime();
         if (lStart < oEnd && oStart < lEnd) {
           professorConflict = other;
           break;
@@ -142,7 +142,7 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
               >
                 {shifts.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.courseAcronym} &bull; {s.name} ({s.enrolledStudents} alunos) {s.roomTypeReq ? `[${s.roomTypeReq}]` : ''}
+                    {s.courseAcronym} &bull; {s.name} ({s.enrolled_students} alunos) {s.room_type_req ? `[${s.room_type_req}]` : ''}
                   </option>
                 ))}
               </select>
@@ -156,13 +156,13 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Alunos Atualmente Inscritos:</span>
-                  <span className={`font-bold ${selectedShift.enrolledStudents > 40 ? 'text-rose-600' : 'text-slate-800'}`}>
-                    {selectedShift.enrolledStudents} alunos
+                  <span className={`font-bold ${selectedShift.enrolled_students > 40 ? 'text-rose-600' : 'text-slate-800'}`}>
+                    {selectedShift.enrolled_students} alunos
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Tipo de Sala Exigido:</span>
-                  <span className="font-medium text-slate-800">{selectedShift.roomTypeReq || 'Qualquer'}</span>
+                  <span className="font-medium text-slate-800">{selectedShift.room_type_req || 'Qualquer'}</span>
                 </div>
               </div>
             )}
@@ -198,7 +198,7 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                   <div>
                     <span className="font-semibold text-rose-300">Cenário Atual (Sem desdobrar):</span>
                     <p className="text-slate-300 text-[11px] mt-0.5">
-                      {selectedShift.name} com {selectedShift.enrolledStudents} alunos. Excede a lotação máxima dos laboratórios (36-40 lug.), gerando erro crítico ou impedindo alocação.
+                      {selectedShift.name} com {selectedShift.enrolled_students} alunos. Excede a lotação máxima dos laboratórios (36-40 lug.), gerando erro crítico ou impedindo alocação.
                     </p>
                   </div>
                 </div>
@@ -208,7 +208,7 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                   <div>
                     <span className="font-semibold text-emerald-300">Cenário Após Desdobramento:</span>
                     <p className="text-emerald-100 text-[11px] mt-0.5">
-                      Criação de {selectedShift.name}-A ({Math.ceil(selectedShift.enrolledStudents / 2)} alunos) e {selectedShift.name}-B ({selectedShift.enrolledStudents - Math.ceil(selectedShift.enrolledStudents / 2)} alunos).
+                      Criação de {selectedShift.name}-A ({Math.ceil(selectedShift.enrolled_students / 2)} alunos) e {selectedShift.name}-B ({selectedShift.enrolled_students - Math.ceil(selectedShift.enrolled_students / 2)} alunos).
                       Ambos passam a caber perfeitamente nos Laboratórios disponíveis!
                     </p>
                   </div>
@@ -244,9 +244,9 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                 <select
                   value={selectedLessonId ?? ''}
                   onChange={(e) => {
-                    const lessonId = e.target.value ? Number(e.target.value) : null;
-                    setSelectedLessonId(lessonId);
-                    const l = lessons.find((x) => x.id === lessonId);
+                    const lesson_id = e.target.value ? Number(e.target.value) : null;
+                    setSelectedLessonId(lesson_id);
+                    const l = lessons.find((x) => x.id === lesson_id);
                     if (l) setSelectedProfId(l.currentProfessorId);
                   }}
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500"

@@ -15,21 +15,21 @@ interface CandidateRoom {
 }
 
 interface RoomAssignerProps {
-  lessonId: number;
+  lesson_id: number;
   currentRoomId: number | null;
   candidateRooms: CandidateRoom[];
 }
 
 export function RoomAssigner({
-  lessonId,
+  lesson_id,
   currentRoomId,
   candidateRooms,
 }: RoomAssignerProps) {
   const [isPending, startTransition] = useTransition();
 
-  const handleSelectRoom = (roomId: number | null) => {
+  const handleSelectRoom = (room_id: number | null) => {
     startTransition(async () => {
-      await allocateRoomAction(lessonId, roomId);
+      await allocateRoomAction(lesson_id, room_id);
     });
   };
 
