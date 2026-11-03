@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
-    "seed": "node_modules/.bin/jiti prisma/seed.ts"
+    "seed": ".\\node_modules\\.bin\\jiti.cmd prisma/seed.ts"
   },
   "dependencies": {
     "next": "16.4.2",
