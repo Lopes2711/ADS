@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { requireNonStudentUser } from '@/lib/auth';
+import { requireRoles } from '@/lib/auth';
+import { ROUTE_ROLES } from '@/lib/permissions';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function AlocacaoPage() {
-  await requireNonStudentUser();
+  await requireRoles(ROUTE_ROLES['/alocacao']);
   const [lessons, rooms] = await Promise.all([
     prisma.lesson.findMany({
       include: {

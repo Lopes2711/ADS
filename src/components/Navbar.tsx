@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/login/actions';
+import { canAccessRoute } from '@/lib/permissions';
 
 const links = [
   { href: '/home', label: 'Início' },
@@ -16,11 +17,7 @@ const links = [
 
 export function Navbar({ role }: { role: string | null }) {
   const pathname = usePathname();
-  const visibleLinks = role === null
-    ? []
-    : role === 'STUDENT'
-      ? links.filter((link) => ['/home', '/horarios', '/utilizadores'].includes(link.href))
-      : links;
+  const visibleLinks = links.filter((link) => canAccessRoute(role, link.href));
 
   return (
     <header className="bg-white border-b border-slate-200">

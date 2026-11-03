@@ -1,14 +1,15 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { seedDataAction } from '@/app/actions';
-import { requireNonStudentUser } from '@/lib/auth';
+import { requireRoles } from '@/lib/auth';
+import { ROUTE_ROLES } from '@/lib/permissions';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function ImportarPage() {
-  await requireNonStudentUser();
+  await requireRoles(ROUTE_ROLES['/importar']);
   const [coursesCount, shiftsCount, professorsCount, roomsCount, lessonsCount, rulesCount, violationsCount] =
     await Promise.all([
       prisma.course.count(),

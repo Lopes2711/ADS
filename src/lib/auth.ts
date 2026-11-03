@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { prisma } from './prisma';
 import { verifyPassword } from './password';
 import { redirect } from 'next/navigation';
+import { type Role } from './permissions';
 
 const SESSION_COOKIE = 'ads_session';
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 8;
@@ -65,5 +66,12 @@ export async function requireNonStudentUser() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
   if (user.role === 'STUDENT') redirect('/home');
+  return user;
+}
+
+export async function requireRoles(allowedRoles: Role[]) {
+  const user = await getCurrentUser();
+  if (!user) redirect('/login');
+  if (!allowedRoles.includes(user.role as Role)) redirect('/home');
   return user;
 }

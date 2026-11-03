@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { canAccessRoute } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 
 // @next-codemod-ignore
@@ -9,6 +10,11 @@ export const instant = false;
 export default async function HomePage() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
+
+  const canSeeRules = canAccessRoute(user.role, '/regras');
+  const canSeeAllocation = canAccessRoute(user.role, '/alocacao');
+  const canSeeAdHoc = canAccessRoute(user.role, '/mudancas');
+  const canSeeImport = canAccessRoute(user.role, '/importar');
 
   const [lessonsCount, coursesCount, roomsCount, rulesCount, violations] = await Promise.all([
     prisma.lesson.count(),
@@ -48,7 +54,7 @@ export default async function HomePage() {
           <div className="text-xs uppercase font-medium text-slate-500">Salas</div>
           <div className="text-2xl font-bold text-slate-900 mt-1">{roomsCount}</div>
         </div>
-        {user.role !== 'STUDENT' && (
+        {canSeeRules && (
           <div className="bg-white p-4 rounded-lg border border-slate-200">
             <div className="text-xs uppercase font-medium text-slate-500">Violações</div>
             <div className="text-2xl font-bold text-rose-600 mt-1">{violations.length}</div>
@@ -57,32 +63,48 @@ export default async function HomePage() {
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-900">Módulos</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Módulos Disponíveis ({user.role})</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link href="/horarios" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
             <div className="font-semibold text-slate-900">📅 Horários &amp; Aulas</div>
-            <div className="text-sm text-slate-500 mt-1">Grelha com todas as aulas, horários e docentes atribuídos.</div>
+            <div className="text-sm text-slate-500 mt-1">Consultar horário publicado com todas as aulas e docentes.</div>
           </Link>
-          {user.role !== 'STUDENT' && (
-            <>
-              <Link href="/regras" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-                <div className="font-semibold text-slate-900">⚖️ Regras &amp; Violações (Req. 2)</div>
-                <div className="text-sm text-slate-500 mt-1">Catálogo de regras vigentes e violações ativas detetadas.</div>
-              </Link>
-              <Link href="/alocacao" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-                <div className="font-semibold text-slate-900">🏫 Alocação de Salas (Req. 4)</div>
-                <div className="text-sm text-slate-500 mt-1">Conformidade de salas, capacidade vs inscritos e tipos.</div>
-              </Link>
-              <Link href="/mudancas" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-                <div className="font-semibold text-slate-900">⚡ Mudanças Ad-hoc (Req. 8)</div>
-                <div className="text-sm text-slate-500 mt-1">Turnos sobrelotados, desdobramentos e sobreposições.</div>
-              </Link>
-            </>
+          {canSeeImport && (
+            <Link href="/importar" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
+              <div className="font-semibold text-slate-900">📥 Importar Horários (Req. 2)</div>
+              <div className="text-sm text-slate-500 mt-1">Importar/carregar horários e estado da base de dados.</div>
+            </Link>
+          )}
+          {canSeeRules && (
+            <Link href="/regras" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
+              <div className="font-semibold text-slate-900">⚖️ Regras &amp; Violações (Req. 2)</div>
+              <div className="text-sm text-slate-500 mt-1">
+                {user.role === 'ADMIN'
+                  ? 'Configurar regras ativas, validar horário e consultar violações.'
+                  : 'Validar horário e consultar violações detetadas.'}
+              </div>
+            </Link>
+          )}
+          {canSeeAllocation && (
+            <Link href="/alocacao" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
+              <div className="font-semibold text-slate-900">🏫 Alocação de Salas (Req. 4)</div>
+              <div className="text-sm text-slate-500 mt-1">Alocar sala a aula e consultar sugestões de salas disponíveis.</div>
+            </Link>
+          )}
+          {canSeeAdHoc && (
+            <Link href="/mudancas" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
+              <div className="font-semibold text-slate-900">⚡ Mudanças Ad-hoc (Req. 8)</div>
+              <div className="text-sm text-slate-500 mt-1">
+                {user.role === 'COORDINATOR'
+                  ? 'Trocar docente de aula, desdobrar turno sobrelotado e simular impacto.'
+                  : 'Registar e consultar indisponibilidades docentes.'}
+              </div>
+            </Link>
           )}
         </div>
       </div>
 
-      {user.role !== 'STUDENT' && <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+      {canSeeRules && <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-slate-900">Violações Detetadas na Base de Dados ({violations.length})</h2>
           <Link href="/regras" className="text-xs text-blue-600 hover:underline">Ver todas &rarr;</Link>

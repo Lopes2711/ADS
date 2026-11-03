@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { evaluateScheduleRules } from '@/lib/ruleEngine';
 import { seedDatabase } from '@/lib/seed';
-import { requireCurrentUser } from '@/lib/auth';
+import { requireCurrentUser, requireRoles } from '@/lib/auth';
 import { withAuditActor } from '@/lib/audit-context';
 import { hashPassword } from '@/lib/password';
 import { revalidatePath } from 'next/cache';
@@ -86,7 +86,7 @@ export async function requestRoleAction(formData: FormData): Promise<void> {
  * Ação para semear a base de dados com o cenário de teste inicial
  */
 export async function seedDataAction(): Promise<void> {
-  const user = await requireCurrentUser();
+  const user = await requireRoles(['ADMIN']);
   await withAuditActor(user.id, seedDatabase);
   revalidatePath('/home');
   revalidatePath('/horarios');
@@ -100,7 +100,7 @@ export async function seedDataAction(): Promise<void> {
  * Reavaliação de todas as regras no horário atual
  */
 export async function reevaluateScheduleAction(): Promise<void> {
-  const user = await requireCurrentUser();
+  const user = await requireRoles(['ADMIN', 'COORDINATOR']);
   await withAuditActor(user.id, evaluateScheduleRules);
   revalidatePath('/home');
   revalidatePath('/horarios');
@@ -114,7 +114,7 @@ export async function reevaluateScheduleAction(): Promise<void> {
  * Requisito 2: Ativar ou desativar uma regra de funcionamento
  */
 export async function toggleRuleAction(ruleId: number, is_active: boolean): Promise<void> {
-  const user = await requireCurrentUser();
+  const user = await requireRoles(['ADMIN']);
   await withAuditActor(user.id, async () => {
     await prisma.rule.update({
       where: { id: ruleId },
@@ -131,7 +131,7 @@ export async function toggleRuleAction(ruleId: number, is_active: boolean): Prom
  * Requisito 4: Alocar / Atribuir uma sala a uma aula
  */
 export async function allocateRoomAction(lesson_id: number, room_id: number | null): Promise<void> {
-  const user = await requireCurrentUser();
+  const user = await requireRoles(['ADMIN']);
   await withAuditActor(user.id, async () => {
     await prisma.lesson.update({
       where: { id: lesson_id },
@@ -149,7 +149,7 @@ export async function allocateRoomAction(lesson_id: number, room_id: number | nu
  * Requisito 8: Desdobramento de turno / turma (ex: turma com muitos inscritos)
  */
 export async function splitShiftAction(shift_id: number): Promise<void> {
-  const user = await requireCurrentUser();
+  const user = await requireRoles(['COORDINATOR']);
   await withAuditActor(user.id, async () => {
     const shift = await prisma.shift.findUnique({
       where: { id: shift_id },
@@ -215,7 +215,7 @@ export async function splitShiftAction(shift_id: number): Promise<void> {
  * Requisito 8: Mudança de Professor de uma Aula / UC
  */
 export async function changeProfessorAction(lesson_id: number, newProfessorId: number): Promise<void> {
-  const user = await requireCurrentUser();
+  const user = await requireRoles(['COORDINATOR']);
   await withAuditActor(user.id, async () => {
     await prisma.lesson.update({
       where: { id: lesson_id },

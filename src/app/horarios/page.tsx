@@ -1,19 +1,21 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { requireCurrentUser } from '@/lib/auth';
+import { requireRoles } from '@/lib/auth';
+import { canAccessRoute, ROUTE_ROLES } from '@/lib/permissions';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function HorariosPage() {
-  const currentUser = await requireCurrentUser();
+  const currentUser = await requireRoles(ROUTE_ROLES['/horarios']);
+  const canSeeViolations = canAccessRoute(currentUser.role, '/regras');
   const lessons = await prisma.lesson.findMany({
     include: {
       shift: { include: { course: true } },
       room: true,
       professor: true,
-      ...(currentUser.role === 'STUDENT' ? {} : { violations: true }),
+      ...(canSeeViolations ? { violations: true } : {}),
     },
     orderBy: { start_time: 'asc' },
   });
@@ -47,14 +49,14 @@ export default async function HorariosPage() {
                 <th className="px-4 py-3">Turno / Alunos</th>
                 <th className="px-4 py-3">Docente</th>
                 <th className="px-4 py-3">Sala</th>
-                {currentUser.role !== 'STUDENT' && <th className="px-4 py-3">Estado</th>}
+                {canSeeViolations && <th className="px-4 py-3">Estado</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {lessons.map((lesson) => {
                 const start_time = new Date(lesson.start_time);
                 const end_time = new Date(lesson.end_time);
-                const hasViolations = currentUser.role !== 'STUDENT' && lesson.violations.length > 0;
+                const hasViolations = canSeeViolations && lesson.violations.length > 0;
 
                 return (
                   <tr key={lesson.id} className="hover:bg-slate-50">
@@ -87,7 +89,7 @@ export default async function HorariosPage() {
                         </span>
                       )}
                     </td>
-                    {currentUser.role !== 'STUDENT' && <td className="px-4 py-3">
+                    {canSeeViolations && <td className="px-4 py-3">
                       {hasViolations ? (
                         <div className="space-y-1">
                           {lesson.violations.map((v) => (

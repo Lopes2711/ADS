@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { requireNonStudentUser } from '@/lib/auth';
+import { requireRoles } from '@/lib/auth';
+import { ROUTE_ROLES } from '@/lib/permissions';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function MudancasPage() {
-  await requireNonStudentUser();
+  await requireRoles(ROUTE_ROLES['/mudancas']);
   const [shifts, professors, lessons] = await Promise.all([
     prisma.shift.findMany({
       include: { course: true, lessons: true },
