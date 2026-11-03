@@ -1,19 +1,21 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { requireCurrentUser } from '@/lib/auth';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function HorariosPage() {
+  const currentUser = await requireCurrentUser();
   const lessons = await prisma.lesson.findMany({
     include: {
       shift: { include: { course: true } },
       room: true,
       professor: true,
-      violations: true,
+      ...(currentUser.role === 'STUDENT' ? {} : { violations: true }),
     },
-    orderBy: { startTime: 'asc' },
+    orderBy: { start_time: 'asc' },
   });
 
   const getDayName = (d: Date) => {
@@ -32,7 +34,7 @@ export default async function HorariosPage() {
           <h1 className="text-2xl font-bold text-slate-900">Horários &amp; Aulas</h1>
           <p className="text-slate-500 text-sm mt-1">Lista de todas as aulas agendadas ({lessons.length} aulas)</p>
         </div>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
+        <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
@@ -45,20 +47,20 @@ export default async function HorariosPage() {
                 <th className="px-4 py-3">Turno / Alunos</th>
                 <th className="px-4 py-3">Docente</th>
                 <th className="px-4 py-3">Sala</th>
-                <th className="px-4 py-3">Estado</th>
+                {currentUser.role !== 'STUDENT' && <th className="px-4 py-3">Estado</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {lessons.map((lesson) => {
-                const startTime = new Date(lesson.startTime);
-                const endTime = new Date(lesson.endTime);
-                const hasViolations = lesson.violations.length > 0;
+                const start_time = new Date(lesson.start_time);
+                const end_time = new Date(lesson.end_time);
+                const hasViolations = currentUser.role !== 'STUDENT' && lesson.violations.length > 0;
 
                 return (
                   <tr key={lesson.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="font-medium text-slate-900">{getDayName(startTime)}</div>
-                      <div className="text-xs text-slate-500">{formatTime(startTime)} - {formatTime(endTime)}</div>
+                      <div className="font-medium text-slate-900">{getDayName(start_time)}</div>
+                      <div className="text-xs text-slate-500">{formatTime(start_time)} - {formatTime(end_time)}</div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-semibold text-slate-800">{lesson.shift.course.acronym}</div>
@@ -67,7 +69,7 @@ export default async function HorariosPage() {
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="font-medium text-slate-800">{lesson.shift.name}</div>
                       <div className="text-xs text-slate-500">
-                        {lesson.shift.enrolledStudents} alunos {lesson.shift.roomTypeReq && `• ${lesson.shift.roomTypeReq}`}
+                        {lesson.shift.enrolled_students} alunos {lesson.shift.room_type_req && `• ${lesson.shift.room_type_req}`}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -85,7 +87,7 @@ export default async function HorariosPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    {currentUser.role !== 'STUDENT' && <td className="px-4 py-3">
                       {hasViolations ? (
                         <div className="space-y-1">
                           {lesson.violations.map((v) => (
@@ -96,7 +98,7 @@ export default async function HorariosPage() {
                               }`}
                               title={v.description}
                             >
-                              {v.ruleCode || v.severity}
+                              {v.rule_code || v.severity}
                             </span>
                           ))}
                         </div>
@@ -105,7 +107,7 @@ export default async function HorariosPage() {
                           ✓ Conforme
                         </span>
                       )}
-                    </td>
+                    </td>}
                   </tr>
                 );
               })}

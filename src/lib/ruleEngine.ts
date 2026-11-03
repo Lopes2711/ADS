@@ -6,10 +6,10 @@ export interface EvaluationResult {
   errorsCount: number;
   warningsCount: number;
   violations: {
-    lessonId: number;
+    lesson_id: number;
     courseAcronym: string;
     shiftName: string;
-    ruleCode: string;
+    rule_code: string;
     description: string;
     severity: 'ERRO' | 'AVISO';
   }[];
@@ -21,7 +21,7 @@ export interface EvaluationResult {
  */
 export async function evaluateScheduleRules(): Promise<EvaluationResult> {
   const activeRules = await prisma.rule.findMany({
-    where: { isActive: true },
+    where: { is_active: true },
   });
 
   const ruleMap = new Map(activeRules.map((r) => [r.code, r]));
@@ -37,7 +37,7 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
       professor: true,
     },
     orderBy: {
-      startTime: 'asc',
+      start_time: 'asc',
     },
   });
 
@@ -45,8 +45,8 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
   await prisma.violation.deleteMany({});
 
   const violationsToInsert: {
-    lessonId: number;
-    ruleCode: string;
+    lesson_id: number;
+    rule_code: string;
     description: string;
     severity: 'ERRO' | 'AVISO';
     courseAcronym: string;
@@ -55,7 +55,7 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
 
   for (let i = 0; i < lessons.length; i++) {
     const l1 = lessons[i];
-    const durationMinutes = (l1.endTime.getTime() - l1.startTime.getTime()) / (1000 * 60);
+    const durationMinutes = (l1.end_time.getTime() - l1.start_time.getTime()) / (1000 * 60);
 
     // REGRA 1: Duração máxima de 3 horas (180 min) da mesma UC
     if (ruleMap.has('MAX_3H_CONSECUTIVAS')) {
@@ -70,8 +70,8 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
 
       if (durationMinutes > maxMinutes) {
         violationsToInsert.push({
-          lessonId: l1.id,
-          ruleCode: 'MAX_3H_CONSECUTIVAS',
+          lesson_id: l1.id,
+          rule_code: 'MAX_3H_CONSECUTIVAS',
           description: `A aula tem duração de ${Math.round(durationMinutes / 60)}h (${durationMinutes}min), excedendo o limite máximo regulamentar de ${maxMinutes / 60}h consecutivas para a UC ${l1.shift.course.acronym}.`,
           severity: 'ERRO',
           courseAcronym: l1.shift.course.acronym,
@@ -83,9 +83,9 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
     // REGRA: Sala não alocada (Requisito 4)
     if (!l1.room) {
       violationsToInsert.push({
-        lessonId: l1.id,
-        ruleCode: 'MISSING_ROOM',
-        description: `Aula de ${l1.shift.course.acronym} (${l1.shift.name}) ainda não tem sala atribuída (${l1.shift.enrolledStudents} alunos inscritos).`,
+        lesson_id: l1.id,
+        rule_code: 'MISSING_ROOM',
+        description: `Aula de ${l1.shift.course.acronym} (${l1.shift.name}) ainda não tem sala atribuída (${l1.shift.enrolled_students} alunos inscritos).`,
         severity: 'AVISO',
         courseAcronym: l1.shift.course.acronym,
         shiftName: l1.shift.name,
@@ -93,11 +93,11 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
     } else {
       // REGRA: Capacidade da Sala
       if (ruleMap.has('ROOM_CAPACITY')) {
-        if (l1.room.capacity < l1.shift.enrolledStudents) {
+        if (l1.room.capacity < l1.shift.enrolled_students) {
           violationsToInsert.push({
-            lessonId: l1.id,
-            ruleCode: 'ROOM_CAPACITY',
-            description: `A sala ${l1.room.name} tem lotação de ${l1.room.capacity} lugares, insuficiente para os ${l1.shift.enrolledStudents} alunos inscritos no turno ${l1.shift.name}.`,
+            lesson_id: l1.id,
+            rule_code: 'ROOM_CAPACITY',
+            description: `A sala ${l1.room.name} tem lotação de ${l1.room.capacity} lugares, insuficiente para os ${l1.shift.enrolled_students} alunos inscritos no turno ${l1.shift.name}.`,
             severity: 'ERRO',
             courseAcronym: l1.shift.course.acronym,
             shiftName: l1.shift.name,
@@ -106,12 +106,12 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
       }
 
       // REGRA: Tipo de Sala
-      if (ruleMap.has('ROOM_TYPE') && l1.shift.roomTypeReq) {
-        if (l1.room.type.toLowerCase() !== l1.shift.roomTypeReq.toLowerCase()) {
+      if (ruleMap.has('ROOM_TYPE') && l1.shift.room_type_req) {
+        if (l1.room.type.toLowerCase() !== l1.shift.room_type_req.toLowerCase()) {
           violationsToInsert.push({
-            lessonId: l1.id,
-            ruleCode: 'ROOM_TYPE',
-            description: `A aula requer tipo "${l1.shift.roomTypeReq}", mas está alocada à sala ${l1.room.name} do tipo "${l1.room.type}".`,
+            lesson_id: l1.id,
+            rule_code: 'ROOM_TYPE',
+            description: `A aula requer tipo "${l1.shift.room_type_req}", mas está alocada à sala ${l1.room.name} do tipo "${l1.room.type}".`,
             severity: 'AVISO',
             courseAcronym: l1.shift.course.acronym,
             shiftName: l1.shift.name,
@@ -126,21 +126,21 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
 
       // Verifica se há sobreposição temporal
       const hasTimeOverlap =
-        l1.startTime < l2.endTime && l2.startTime < l1.endTime;
+        l1.start_time < l2.end_time && l2.start_time < l1.end_time;
 
       if (!hasTimeOverlap) continue;
 
       // Sobreposição de Professor
       if (
         ruleMap.has('PROFESSOR_OVERLAP') &&
-        l1.professorId &&
-        l2.professorId &&
-        l1.professorId === l2.professorId
+        l1.professor_id &&
+        l2.professor_id &&
+        l1.professor_id === l2.professor_id
       ) {
         const profName = l1.professor?.name ?? 'Docente';
         violationsToInsert.push({
-          lessonId: l1.id,
-          ruleCode: 'PROFESSOR_OVERLAP',
+          lesson_id: l1.id,
+          rule_code: 'PROFESSOR_OVERLAP',
           description: `O docente ${profName} tem duas aulas em simultâneo: ${l1.shift.course.acronym} (${l1.shift.name}) e ${l2.shift.course.acronym} (${l2.shift.name}).`,
           severity: 'ERRO',
           courseAcronym: l1.shift.course.acronym,
@@ -151,11 +151,11 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
       // Sobreposição de Turno/Turma
       if (
         ruleMap.has('SHIFT_OVERLAP') &&
-        l1.shiftId === l2.shiftId
+        l1.shift_id === l2.shift_id
       ) {
         violationsToInsert.push({
-          lessonId: l1.id,
-          ruleCode: 'SHIFT_OVERLAP',
+          lesson_id: l1.id,
+          rule_code: 'SHIFT_OVERLAP',
           description: `O turno ${l1.shift.name} tem sobreposição de aulas no mesmo período de horário.`,
           severity: 'ERRO',
           courseAcronym: l1.shift.course.acronym,
@@ -164,10 +164,10 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
       }
 
       // Sobreposição de Sala
-      if (l1.roomId && l2.roomId && l1.roomId === l2.roomId) {
+      if (l1.room_id && l2.room_id && l1.room_id === l2.room_id) {
         violationsToInsert.push({
-          lessonId: l1.id,
-          ruleCode: 'ROOM_OVERLAP',
+          lesson_id: l1.id,
+          rule_code: 'ROOM_OVERLAP',
           description: `A sala ${l1.room?.name} está alocada simultaneamente a duas aulas no mesmo horário (${l1.shift.name} e ${l2.shift.name}).`,
           severity: 'ERRO',
           courseAcronym: l1.shift.course.acronym,
@@ -180,15 +180,15 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
   // Grava as violações na base de dados
   if (violationsToInsert.length > 0) {
     // Encontra o horário principal para associar as violações
-    const mainSchedule = await prisma.schedule.findFirst({ where: { isMain: true } })
+    const mainSchedule = await prisma.schedule.findFirst({ where: { is_main: true } })
       ?? await prisma.schedule.findFirst();
 
     if (mainSchedule) {
       await prisma.violation.createMany({
         data: violationsToInsert.map((v) => ({
-          lessonId: v.lessonId,
-          scheduleId: mainSchedule.id,
-          ruleCode: v.ruleCode,
+          lesson_id: v.lesson_id,
+          schedule_id: mainSchedule.id,
+          rule_code: v.rule_code,
           description: v.description,
           severity: v.severity,
         })),

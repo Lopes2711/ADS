@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
+import { getCurrentUser } from '@/lib/auth';
 
 export const metadata: Metadata = {
   title: 'Gestão de Horários ISCTE',
@@ -10,11 +11,12 @@ export const metadata: Metadata = {
 // @next-codemod-ignore
 export const instant = false;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
   return (
     <html lang="pt">
       <body className="min-h-screen bg-slate-50 text-slate-900">
-        <Navbar />
+        <Navbar role={user?.role ?? null} />
         <main className="max-w-4xl mx-auto px-4 py-8">
           {children}
         </main>

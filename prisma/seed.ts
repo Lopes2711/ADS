@@ -1,19 +1,28 @@
 import { PrismaClient } from '@prisma/client';
+import { hashPassword } from '../src/lib/password';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Clearing existing data...');
-  await prisma.violation.deleteMany({});
-  await prisma.lesson.deleteMany({});
-  await prisma.schedule.deleteMany({});
-  await prisma.shift.deleteMany({});
-  await prisma.course.deleteMany({});
-  await prisma.professor.deleteMany({});
-  await prisma.roomFeature.deleteMany({});
-  await prisma.room.deleteMany({});
-  await prisma.rule.deleteMany({});
-  await prisma.user.deleteMany({});
+  console.log('👤 Verificando utilizador administrador...');
+  await prisma.user.upsert({
+    where: { email: 'admin@ads.local' },
+    update: {},
+    create: {
+        name: 'Administrador',
+        email: 'admin@ads.local',
+        password: await hashPassword(process.env.SEED_ADMIN_PASSWORD ?? 'Admin123!'),
+        role: 'ADMIN',
+    },
+  });
+
+  const existingSchedule = await prisma.schedule.count();
+  if (existingSchedule > 0) {
+    console.log('ℹ️ A base de dados já contém dados de demonstração. O seed não fez alterações.');
+    return;
+  }
+
+  console.log('🌱 A criar dados de demonstração...');
 
   // ── Rules ──────────────────────────────────────────────────────────────────
   console.log('📋 Seeding rules...');
@@ -23,7 +32,7 @@ async function main() {
         code: 'MAX_3H_CONSECUTIVAS',
         name: 'Duração Máxima 3h Consecutivas',
         description: 'Uma aula da mesma UC não deve durar mais de 3 horas consecutivas.',
-        isActive: true,
+        is_active: true,
         severity: 'ERRO',
         parameters: JSON.stringify({ maxDurationMinutes: 180 }),
       },
@@ -31,28 +40,28 @@ async function main() {
         code: 'PROFESSOR_OVERLAP',
         name: 'Sem Sobreposição de Docentes',
         description: 'Um docente não pode ter duas aulas no mesmo intervalo de tempo.',
-        isActive: true,
+        is_active: true,
         severity: 'ERRO',
       },
       {
         code: 'ROOM_CAPACITY',
         name: 'Lotação Suficiente da Sala',
         description: 'A sala alocada deve ter lotação ≥ número de alunos inscritos no turno.',
-        isActive: true,
+        is_active: true,
         severity: 'ERRO',
       },
       {
         code: 'ROOM_TYPE',
         name: 'Tipo de Sala Conforme',
         description: 'O tipo de sala deve corresponder ao tipo exigido pelo turno.',
-        isActive: true,
+        is_active: true,
         severity: 'AVISO',
       },
       {
         code: 'MISSING_ROOM',
         name: 'Sala Não Atribuída',
         description: 'Aula sem sala alocada — necessita de atribuição.',
-        isActive: true,
+        is_active: true,
         severity: 'AVISO',
       },
     ],
@@ -84,25 +93,25 @@ async function main() {
   // ── Shifts ─────────────────────────────────────────────────────────────────
   console.log('🔀 Seeding shifts...');
   // ADS
-  const shiftADS_T1  = await prisma.shift.create({ data: { name: 'ADS-T1',  type: 'T',  enrolledStudents: 95, roomTypeReq: 'Anfiteatro',  courseId: courseADS.id } });
-  const shiftADS_PL1 = await prisma.shift.create({ data: { name: 'ADS-PL1', type: 'PL', enrolledStudents: 32, roomTypeReq: 'Laboratório', courseId: courseADS.id } });
+  const shiftADS_T1  = await prisma.shift.create({ data: { name: 'ADS-T1',  type: 'T',  enrolled_students: 95, room_type_req: 'Anfiteatro',  course_id: courseADS.id } });
+  const shiftADS_PL1 = await prisma.shift.create({ data: { name: 'ADS-PL1', type: 'PL', enrolled_students: 32, room_type_req: 'Laboratório', course_id: courseADS.id } });
   // Intentionally overcrowded for Req. 8 split demo (68 students, labs max 40)
-  const shiftADS_PL2 = await prisma.shift.create({ data: { name: 'ADS-PL2', type: 'PL', enrolledStudents: 68, roomTypeReq: 'Laboratório', courseId: courseADS.id } });
+  const shiftADS_PL2 = await prisma.shift.create({ data: { name: 'ADS-PL2', type: 'PL', enrolled_students: 68, room_type_req: 'Laboratório', course_id: courseADS.id } });
 
   // SD
-  const shiftSD_T1   = await prisma.shift.create({ data: { name: 'SD-T1',   type: 'T',  enrolledStudents: 75, roomTypeReq: 'Anfiteatro',  courseId: courseSD.id } });
-  const shiftSD_PL1  = await prisma.shift.create({ data: { name: 'SD-PL1',  type: 'PL', enrolledStudents: 35, roomTypeReq: 'Laboratório', courseId: courseSD.id } });
+  const shiftSD_T1   = await prisma.shift.create({ data: { name: 'SD-T1',   type: 'T',  enrolled_students: 75, room_type_req: 'Anfiteatro',  course_id: courseSD.id } });
+  const shiftSD_PL1  = await prisma.shift.create({ data: { name: 'SD-PL1',  type: 'PL', enrolled_students: 35, room_type_req: 'Laboratório', course_id: courseSD.id } });
 
   // BDA
-  const shiftBDA_T1  = await prisma.shift.create({ data: { name: 'BDA-T1',  type: 'T',  enrolledStudents: 80, roomTypeReq: 'Anfiteatro',  courseId: courseBDA.id } });
-  const shiftBDA_PL1 = await prisma.shift.create({ data: { name: 'BDA-PL1', type: 'PL', enrolledStudents: 34, roomTypeReq: 'Laboratório', courseId: courseBDA.id } });
+  const shiftBDA_T1  = await prisma.shift.create({ data: { name: 'BDA-T1',  type: 'T',  enrolled_students: 80, room_type_req: 'Anfiteatro',  course_id: courseBDA.id } });
+  const shiftBDA_PL1 = await prisma.shift.create({ data: { name: 'BDA-PL1', type: 'PL', enrolled_students: 34, room_type_req: 'Laboratório', course_id: courseBDA.id } });
 
   // ER
-  const shiftER_TP1  = await prisma.shift.create({ data: { name: 'ER-TP1',  type: 'TP', enrolledStudents: 42, roomTypeReq: 'Normal',      courseId: courseER.id } });
+  const shiftER_TP1  = await prisma.shift.create({ data: { name: 'ER-TP1',  type: 'TP', enrolled_students: 42, room_type_req: 'Normal',      course_id: courseER.id } });
 
   // ── Schedule ───────────────────────────────────────────────────────────────
   console.log('📅 Seeding schedule...');
-  const schedule = await prisma.schedule.create({ data: { name: 'Horário 2026/27 S1', isMain: true } });
+  const schedule = await prisma.schedule.create({ data: { name: 'Horário 2026/27 S1', is_main: true } });
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   // Next Monday as anchor date
@@ -131,62 +140,62 @@ async function main() {
   const thu = day(3); // Thursday
 
   // MON 09:00-11:00 — ADS Teórica — Auditório (OK ✅)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftADS_T1.id, date: mon, startTime: dt(mon, 9), endTime: dt(mon, 11), roomId: roomAud1.id, professorId: profCarlos.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftADS_T1.id, date: mon, start_time: dt(mon, 9), end_time: dt(mon, 11), room_id: roomAud1.id, professor_id: profCarlos.id } });
 
   // MON 11:30-13:30 — ADS PL1 — Lab 1.10 (OK ✅)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftADS_PL1.id, date: mon, startTime: dt(mon, 11, 30), endTime: dt(mon, 13, 30), roomId: roomLab1.id, professorId: profCarlos.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftADS_PL1.id, date: mon, start_time: dt(mon, 11, 30), end_time: dt(mon, 13, 30), room_id: roomLab1.id, professor_id: profCarlos.id } });
 
   // MON 14:00-18:00 — ADS PL2 — NO ROOM, 68 students, 4h duration
   //   → MISSING_ROOM + MAX_3H_CONSECUTIVAS (Req.4 + Req.2 demos)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftADS_PL2.id, date: mon, startTime: dt(mon, 14), endTime: dt(mon, 18), roomId: null, professorId: profPedro.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftADS_PL2.id, date: mon, start_time: dt(mon, 14), end_time: dt(mon, 18), room_id: null, professor_id: profPedro.id } });
 
   // TUE 10:00-12:00 — SD Teórica — Auditório Afonso (OK ✅)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftSD_T1.id, date: tue, startTime: dt(tue, 10), endTime: dt(tue, 12), roomId: roomAud2.id, professorId: profMaria.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftSD_T1.id, date: tue, start_time: dt(tue, 10), end_time: dt(tue, 12), room_id: roomAud2.id, professor_id: profMaria.id } });
 
   // TUE 14:00-16:30 — SD PL1 — Sala Normal instead of Lab
   //   → ROOM_TYPE violation (Req.2 demo)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftSD_PL1.id, date: tue, startTime: dt(tue, 14), endTime: dt(tue, 16, 30), roomId: roomNorm1.id, professorId: profMaria.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftSD_PL1.id, date: tue, start_time: dt(tue, 14), end_time: dt(tue, 16, 30), room_id: roomNorm1.id, professor_id: profMaria.id } });
 
   // TUE 10:00-12:00 — BDA Teórica — Carlos Silva (same slot as SD-T1 for Maria, no conflict)
   //   But Pedro Ferreira is double-booked below → PROFESSOR_OVERLAP demo
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftBDA_T1.id, date: tue, startTime: dt(tue, 10), endTime: dt(tue, 12), roomId: roomAud1.id, professorId: profPedro.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftBDA_T1.id, date: tue, start_time: dt(tue, 10), end_time: dt(tue, 12), room_id: roomAud1.id, professor_id: profPedro.id } });
 
   // WED 09:30-11:30 — ER TP1 — Sala C2.04 (capacity 25, students 42)
   //   → ROOM_CAPACITY violation (Req.4 demo)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftER_TP1.id, date: wed, startTime: dt(wed, 9, 30), endTime: dt(wed, 11, 30), roomId: roomNorm2.id, professorId: profAna.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftER_TP1.id, date: wed, start_time: dt(wed, 9, 30), end_time: dt(wed, 11, 30), room_id: roomNorm2.id, professor_id: profAna.id } });
 
   // WED 11:30-13:30 — BDA T1 again (different week rep.) — Pedro (same as TUE BDA-T1, different day — OK)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftBDA_T1.id, date: wed, startTime: dt(wed, 11, 30), endTime: dt(wed, 13, 30), roomId: roomAud1.id, professorId: profPedro.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftBDA_T1.id, date: wed, start_time: dt(wed, 11, 30), end_time: dt(wed, 13, 30), room_id: roomAud1.id, professor_id: profPedro.id } });
 
   // THU 14:00-16:00 — BDA PL1 — no room assigned (Req.4 pending allocation demo)
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftBDA_PL1.id, date: thu, startTime: dt(thu, 14), endTime: dt(thu, 16), roomId: null, professorId: profPedro.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftBDA_PL1.id, date: thu, start_time: dt(thu, 14), end_time: dt(thu, 16), room_id: null, professor_id: profPedro.id } });
 
   // THU 14:00-16:00 — BDA PL1 duplicate slot → PROFESSOR_OVERLAP for Pedro (pedro has BDA-PL1 + next)
   // Actually let's make Pedro teach two lessons simultaneously on Thursday for the overlap demo:
-  await prisma.lesson.create({ data: { scheduleId: schedule.id, shiftId: shiftADS_PL1.id, date: thu, startTime: dt(thu, 14), endTime: dt(thu, 16), roomId: roomLab2.id, professorId: profPedro.id } });
+  await prisma.lesson.create({ data: { schedule_id: schedule.id, shift_id: shiftADS_PL1.id, date: thu, start_time: dt(thu, 14), end_time: dt(thu, 16), room_id: roomLab2.id, professor_id: profPedro.id } });
 
   // ── Violations ─────────────────────────────────────────────────────────────
   // Let the rule engine compute them from the lessons we just created.
   // We'll insert the obvious ones manually since the engine needs to be called separately.
-  console.log('⚠️  Seeding violations...');
+  console.log('??  Seeding violations...');
   const lessons = await prisma.lesson.findMany({ include: { shift: { include: { course: true } }, room: true } });
 
-  const viols: { scheduleId: number; lessonId: number; ruleCode: string; description: string; severity: string }[] = [];
+  const viols: { schedule_id: number; lesson_id: number; rule_code: string; description: string; severity: string }[] = [];
 
   for (const l of lessons) {
-    const dur = (l.endTime.getTime() - l.startTime.getTime()) / 60000;
+    const dur = (l.end_time.getTime() - l.start_time.getTime()) / 60000;
 
     if (dur > 180) {
-      viols.push({ scheduleId: schedule.id, lessonId: l.id, ruleCode: 'MAX_3H_CONSECUTIVAS', description: `Aula de ${l.shift.course.acronym} (${l.shift.name}) tem ${dur / 60}h — excede 3h consecutivas.`, severity: 'ERRO' });
+      viols.push({ schedule_id: schedule.id, lesson_id: l.id, rule_code: 'MAX_3H_CONSECUTIVAS', description: `Aula de ${l.shift.course.acronym} (${l.shift.name}) tem ${dur / 60}h — excede 3h consecutivas.`, severity: 'ERRO' });
     }
-    if (!l.roomId) {
-      viols.push({ scheduleId: schedule.id, lessonId: l.id, ruleCode: 'MISSING_ROOM', description: `${l.shift.course.acronym} (${l.shift.name}) — sem sala atribuída.`, severity: 'AVISO' });
+    if (!l.room_id) {
+      viols.push({ schedule_id: schedule.id, lesson_id: l.id, rule_code: 'MISSING_ROOM', description: `${l.shift.course.acronym} (${l.shift.name}) — sem sala atribuída.`, severity: 'AVISO' });
     } else if (l.room) {
-      if (l.room.capacity < l.shift.enrolledStudents) {
-        viols.push({ scheduleId: schedule.id, lessonId: l.id, ruleCode: 'ROOM_CAPACITY', description: `Sala ${l.room.name} (lotação ${l.room.capacity}) insuficiente para ${l.shift.enrolledStudents} inscritos (${l.shift.course.acronym} ${l.shift.name}).`, severity: 'ERRO' });
+      if (l.room.capacity < l.shift.enrolled_students) {
+        viols.push({ schedule_id: schedule.id, lesson_id: l.id, rule_code: 'ROOM_CAPACITY', description: `Sala ${l.room.name} (lotação ${l.room.capacity}) insuficiente para ${l.shift.enrolled_students} inscritos (${l.shift.course.acronym} ${l.shift.name}).`, severity: 'ERRO' });
       }
-      if (l.shift.roomTypeReq && l.room.type.toLowerCase() !== l.shift.roomTypeReq.toLowerCase()) {
-        viols.push({ scheduleId: schedule.id, lessonId: l.id, ruleCode: 'ROOM_TYPE', description: `${l.shift.course.acronym} (${l.shift.name}) requer ${l.shift.roomTypeReq} mas está em ${l.room.type} (${l.room.name}).`, severity: 'AVISO' });
+      if (l.shift.room_type_req && l.room.type.toLowerCase() !== l.shift.room_type_req.toLowerCase()) {
+        viols.push({ schedule_id: schedule.id, lesson_id: l.id, rule_code: 'ROOM_TYPE', description: `${l.shift.course.acronym} (${l.shift.name}) requer ${l.shift.room_type_req} mas está em ${l.room.type} (${l.room.name}).`, severity: 'AVISO' });
       }
     }
   }
@@ -195,8 +204,8 @@ async function main() {
   for (let i = 0; i < lessons.length; i++) {
     for (let j = i + 1; j < lessons.length; j++) {
       const a = lessons[i], b = lessons[j];
-      if (a.professorId && a.professorId === b.professorId && a.startTime < b.endTime && b.startTime < a.endTime) {
-        viols.push({ scheduleId: schedule.id, lessonId: a.id, ruleCode: 'PROFESSOR_OVERLAP', description: `Docente com sobreposição: ${a.shift.course.acronym} ${a.shift.name} e ${b.shift.course.acronym} ${b.shift.name} no mesmo horário.`, severity: 'ERRO' });
+      if (a.professor_id && a.professor_id === b.professor_id && a.start_time < b.end_time && b.start_time < a.end_time) {
+        viols.push({ schedule_id: schedule.id, lesson_id: a.id, rule_code: 'PROFESSOR_OVERLAP', description: `Docente com sobreposição: ${a.shift.course.acronym} ${a.shift.name} e ${b.shift.course.acronym} ${b.shift.name} no mesmo horário.`, severity: 'ERRO' });
       }
     }
   }

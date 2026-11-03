@@ -2,15 +2,10 @@ import { prisma } from './prisma';
 import { evaluateScheduleRules } from './ruleEngine';
 
 export async function seedDatabase() {
-  // Limpar tabelas por ordem para evitar conflitos de FK
-  await prisma.violation.deleteMany({});
-  await prisma.lesson.deleteMany({});
-  await prisma.schedule.deleteMany({});
-  await prisma.shift.deleteMany({});
-  await prisma.course.deleteMany({});
-  await prisma.professor.deleteMany({});
-  await prisma.room.deleteMany({});
-  await prisma.rule.deleteMany({});
+  const existingSchedule = await prisma.schedule.count();
+  if (existingSchedule > 0) {
+    return;
+  }
 
   // 1. Criar Regras de Negócio (Requisito 2)
   await prisma.rule.createMany({
@@ -19,39 +14,39 @@ export async function seedDatabase() {
         code: 'MAX_3H_CONSECUTIVAS',
         name: 'Duração Máxima de 3 Horas Consecutivas',
         description: 'Não devem existir blocos de aulas da mesma UC com duração superior a 3 horas no mesmo dia.',
-        isActive: true,
+        is_active: true,
         parameters: JSON.stringify({ maxDurationMinutes: 180 }),
       },
       {
         code: 'PROFESSOR_OVERLAP',
         name: 'Sem Sobreposição de Docentes',
         description: 'Um professor não pode lecionar duas aulas no mesmo intervalo de tempo.',
-        isActive: true,
+        is_active: true,
       },
       {
         code: 'SHIFT_OVERLAP',
         name: 'Sem Sobreposição de Turnos',
         description: 'Uma turma/turno não pode ter aulas coincidentes no mesmo horário.',
-        isActive: true,
+        is_active: true,
       },
       {
         code: 'ROOM_CAPACITY',
         name: 'Lotação Suficiente da Sala',
         description: 'A lotação da sala alocada deve ser igual ou superior ao número de alunos inscritos no turno.',
-        isActive: true,
+        is_active: true,
       },
       {
         code: 'ROOM_TYPE',
         name: 'Conformidade do Tipo de Sala',
         description: 'O tipo de sala (ex: Laboratório, Anfiteatro, Normal) deve coincidir com os requisitos pedagógicos do turno.',
-        isActive: true,
+        is_active: true,
       },
     ],
   });
 
   // 2. Criar Horário principal (Schedule)
   const schedule = await prisma.schedule.create({
-    data: { name: 'Horário 2026/27 S1', isMain: true },
+    data: { name: 'Horário 2026/27 S1', is_main: true },
   });
 
   // 3. Criar Salas (Requisito 4)
@@ -119,26 +114,26 @@ export async function seedDatabase() {
   const shiftADSTeorica = await prisma.shift.create({
     data: {
       name: 'ADS-T1',
-      enrolledStudents: 95,
-      roomTypeReq: 'Anfiteatro',
-      courseId: courseADS.id,
+      enrolled_students: 95,
+      room_type_req: 'Anfiteatro',
+      course_id: courseADS.id,
     },
   });
   const shiftADSPL1 = await prisma.shift.create({
     data: {
       name: 'ADS-PL1',
-      enrolledStudents: 32,
-      roomTypeReq: 'Laboratório',
-      courseId: courseADS.id,
+      enrolled_students: 32,
+      room_type_req: 'Laboratório',
+      course_id: courseADS.id,
     },
   });
   // Turno sobrelotado de propósito para demonstrar Requisito 8 (Desdobramento de Turma)
   const shiftADSPL2 = await prisma.shift.create({
     data: {
       name: 'ADS-PL2',
-      enrolledStudents: 68, // Excede a capacidade dos laboratórios normais (36 a 40)!
-      roomTypeReq: 'Laboratório',
-      courseId: courseADS.id,
+      enrolled_students: 68, // Excede a capacidade dos laboratórios normais (36 a 40)!
+      room_type_req: 'Laboratório',
+      course_id: courseADS.id,
     },
   });
 
@@ -146,17 +141,17 @@ export async function seedDatabase() {
   const shiftSDTeorica = await prisma.shift.create({
     data: {
       name: 'SD-T1',
-      enrolledStudents: 75,
-      roomTypeReq: 'Anfiteatro',
-      courseId: courseSD.id,
+      enrolled_students: 75,
+      room_type_req: 'Anfiteatro',
+      course_id: courseSD.id,
     },
   });
   const shiftSDPL1 = await prisma.shift.create({
     data: {
       name: 'SD-PL1',
-      enrolledStudents: 35,
-      roomTypeReq: 'Laboratório',
-      courseId: courseSD.id,
+      enrolled_students: 35,
+      room_type_req: 'Laboratório',
+      course_id: courseSD.id,
     },
   });
 
@@ -164,17 +159,17 @@ export async function seedDatabase() {
   const shiftBDATeorica = await prisma.shift.create({
     data: {
       name: 'BDA-T1',
-      enrolledStudents: 80,
-      roomTypeReq: 'Anfiteatro',
-      courseId: courseBD.id,
+      enrolled_students: 80,
+      room_type_req: 'Anfiteatro',
+      course_id: courseBD.id,
     },
   });
   const shiftBDAPL1 = await prisma.shift.create({
     data: {
       name: 'BDA-PL1',
-      enrolledStudents: 34,
-      roomTypeReq: 'Laboratório',
-      courseId: courseBD.id,
+      enrolled_students: 34,
+      room_type_req: 'Laboratório',
+      course_id: courseBD.id,
     },
   });
 
@@ -182,9 +177,9 @@ export async function seedDatabase() {
   const shiftERTP1 = await prisma.shift.create({
     data: {
       name: 'ER-TP1',
-      enrolledStudents: 42,
-      roomTypeReq: 'Normal',
-      courseId: courseER.id,
+      enrolled_students: 42,
+      room_type_req: 'Normal',
+      course_id: courseER.id,
     },
   });
 
@@ -199,12 +194,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dSegunda,
-      startTime: new Date(new Date(dSegunda).setHours(9, 0, 0, 0)),
-      endTime: new Date(new Date(dSegunda).setHours(11, 0, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftADSTeorica.id,
-      roomId: roomAuditorium1.id,
-      professorId: profCarlos.id,
+      start_time: new Date(new Date(dSegunda).setHours(9, 0, 0, 0)),
+      end_time: new Date(new Date(dSegunda).setHours(11, 0, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftADSTeorica.id,
+      room_id: roomAuditorium1.id,
+      professor_id: profCarlos.id,
     },
   });
 
@@ -212,12 +207,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dSegunda,
-      startTime: new Date(new Date(dSegunda).setHours(11, 30, 0, 0)),
-      endTime: new Date(new Date(dSegunda).setHours(13, 30, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftADSPL1.id,
-      roomId: roomLab1.id,
-      professorId: profCarlos.id,
+      start_time: new Date(new Date(dSegunda).setHours(11, 30, 0, 0)),
+      end_time: new Date(new Date(dSegunda).setHours(13, 30, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftADSPL1.id,
+      room_id: roomLab1.id,
+      professor_id: profCarlos.id,
     },
   });
 
@@ -229,12 +224,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dSegunda,
-      startTime: new Date(new Date(dSegunda).setHours(14, 0, 0, 0)),
-      endTime: new Date(new Date(dSegunda).setHours(18, 0, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftADSPL2.id,
-      roomId: null, // Sem sala
-      professorId: profPedro.id,
+      start_time: new Date(new Date(dSegunda).setHours(14, 0, 0, 0)),
+      end_time: new Date(new Date(dSegunda).setHours(18, 0, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftADSPL2.id,
+      room_id: null, // Sem sala
+      professor_id: profPedro.id,
     },
   });
 
@@ -245,12 +240,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dTerca,
-      startTime: new Date(new Date(dTerca).setHours(10, 0, 0, 0)),
-      endTime: new Date(new Date(dTerca).setHours(12, 0, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftSDTeorica.id,
-      roomId: roomAuditorium2.id,
-      professorId: profMaria.id,
+      start_time: new Date(new Date(dTerca).setHours(10, 0, 0, 0)),
+      end_time: new Date(new Date(dTerca).setHours(12, 0, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftSDTeorica.id,
+      room_id: roomAuditorium2.id,
+      professor_id: profMaria.id,
     },
   });
 
@@ -259,12 +254,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dTerca,
-      startTime: new Date(new Date(dTerca).setHours(14, 0, 0, 0)),
-      endTime: new Date(new Date(dTerca).setHours(16, 30, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftSDPL1.id,
-      roomId: roomNormal1.id, // Requer Laboratório, mas está em Sala Normal
-      professorId: profMaria.id,
+      start_time: new Date(new Date(dTerca).setHours(14, 0, 0, 0)),
+      end_time: new Date(new Date(dTerca).setHours(16, 30, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftSDPL1.id,
+      room_id: roomNormal1.id, // Requer Laboratório, mas está em Sala Normal
+      professor_id: profMaria.id,
     },
   });
 
@@ -276,12 +271,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dQuarta,
-      startTime: new Date(new Date(dQuarta).setHours(9, 30, 0, 0)),
-      endTime: new Date(new Date(dQuarta).setHours(11, 30, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftERTP1.id,
-      roomId: roomNormal2.id, // Lotação 25 vs 42 alunos
-      professorId: profAna.id,
+      start_time: new Date(new Date(dQuarta).setHours(9, 30, 0, 0)),
+      end_time: new Date(new Date(dQuarta).setHours(11, 30, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftERTP1.id,
+      room_id: roomNormal2.id, // Lotação 25 vs 42 alunos
+      professor_id: profAna.id,
     },
   });
 
@@ -289,12 +284,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dQuarta,
-      startTime: new Date(new Date(dQuarta).setHours(11, 30, 0, 0)),
-      endTime: new Date(new Date(dQuarta).setHours(13, 30, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftBDATeorica.id,
-      roomId: roomAuditorium1.id,
-      professorId: profPedro.id,
+      start_time: new Date(new Date(dQuarta).setHours(11, 30, 0, 0)),
+      end_time: new Date(new Date(dQuarta).setHours(13, 30, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftBDATeorica.id,
+      room_id: roomAuditorium1.id,
+      professor_id: profPedro.id,
     },
   });
 
@@ -305,12 +300,12 @@ export async function seedDatabase() {
   await prisma.lesson.create({
     data: {
       date: dQuinta,
-      startTime: new Date(new Date(dQuinta).setHours(14, 0, 0, 0)),
-      endTime: new Date(new Date(dQuinta).setHours(16, 0, 0, 0)),
-      scheduleId: schedule.id,
-      shiftId: shiftBDAPL1.id,
-      roomId: null, // Sem sala
-      professorId: profPedro.id,
+      start_time: new Date(new Date(dQuinta).setHours(14, 0, 0, 0)),
+      end_time: new Date(new Date(dQuinta).setHours(16, 0, 0, 0)),
+      schedule_id: schedule.id,
+      shift_id: shiftBDAPL1.id,
+      room_id: null, // Sem sala
+      professor_id: profPedro.id,
     },
   });
 

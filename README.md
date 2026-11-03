@@ -48,24 +48,26 @@ DATABASE_URL="file:./dev.db"
 Run Prisma migrations to set up the local SQLite database and generate the Prisma Client:
 ```bash
 npx prisma migrate dev
+npm run seed
 ```
 This command will:
 - Create the local SQLite database file (`prisma/dev.db`) if it doesn't already exist.
-- Apply all existing database migrations located in `prisma/migrations/`.
+- Apply only the migrations that are still pending in `prisma/migrations/`.
+- Preserve the data already stored in the local database.
 - Generate the latest type-safe `@prisma/client`.
+- Seed the development data (the seed command also creates the admin account).
 
-#### Step 5: Populate the Database with Demo Data (Seed)
-Run the seed script to lightly populate the database with sample data for testing the project features (Requirements 2, 4, and 8):
-```bash
-npm run seed
+The default development credentials are:
+
+```text
+Email: admin@ads.local
+Password: Admin123!
 ```
-This script (`prisma/seed.ts`) clears existing records and inserts:
-- **5 Rules** (`MAX_3H_CONSECUTIVAS`, `PROFESSOR_OVERLAP`, `ROOM_CAPACITY`, `ROOM_TYPE`, `MISSING_ROOM`)
-- **6 Rooms** (auditoriums, labs, normal classrooms)
-- **4 Professors**, **4 Courses (UCs)**, and **8 Shifts**
-- **10 Lessons** and **6 Active Violations** to test rule validation, room allocation, and ad-hoc schedule changes.
 
-#### Step 6: Start the Development Server
+Set `SEED_ADMIN_PASSWORD` in `.env` before running the seed if you want another
+development password.
+
+#### Step 5: Start the Development Server
 ```bash
 npm run dev
 ```
@@ -73,6 +75,9 @@ npm run dev
 #### Step 7: Access the App
 Open your browser and navigate to:
 👉 **[http://localhost:3000](http://localhost:3000)**
+
+Sign in at `/login`. Mutating operations require an authenticated session and
+are recorded in the `Log` table with the authenticated user as the actor.
 
 ---
 
@@ -86,7 +91,7 @@ Open your browser and navigate to:
 | `npm run start` | Runs the compiled production build |
 | `npm run lint` | Runs ESLint to check for code quality and style issues |
 | `npx prisma studio` | Opens an interactive web GUI at `http://localhost:5555` to inspect and edit database records |
-| `npx prisma migrate dev` | Applies new or pending database migrations and updates Prisma Client |
+| `npx prisma migrate dev` | Applies new or pending database migrations without resetting existing data |
 | `npx prisma generate` | Regenerates Prisma Client types (useful after schema updates) |
 
 ---
@@ -135,11 +140,12 @@ npx prisma generate
 ```
 
 ### Resetting the Database
-To reset your local development database to a clean state with fresh migrations:
+Only use this command when you intentionally want to delete all local data and rebuild
+the database from the migration history:
 ```bash
 npx prisma migrate reset
 ```
-*(Warning: This will clear all data in your local `dev.db` file.)*
+*(Warning: This permanently clears all data in your local `dev.db` file.)*
 
 ### Port 3000 is Already in Use
 If port 3000 is occupied by another service:

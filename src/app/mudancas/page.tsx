@@ -1,15 +1,17 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { requireNonStudentUser } from '@/lib/auth';
 
 // @next-codemod-ignore
 export const instant = false;
 
 
 export default async function MudancasPage() {
+  await requireNonStudentUser();
   const [shifts, professors, lessons] = await Promise.all([
     prisma.shift.findMany({
       include: { course: true, lessons: true },
-      orderBy: { enrolledStudents: 'desc' },
+      orderBy: { enrolled_students: 'desc' },
     }),
     prisma.professor.findMany({
       include: { lessons: { include: { shift: { include: { course: true } } } } },
@@ -20,7 +22,7 @@ export default async function MudancasPage() {
         shift: { include: { course: true } },
         professor: true,
       },
-      orderBy: { startTime: 'asc' },
+      orderBy: { start_time: 'asc' },
     }),
   ]);
 
@@ -31,7 +33,7 @@ export default async function MudancasPage() {
           <h1 className="text-2xl font-bold text-slate-900">Mudanças Ad-hoc &amp; Impacto</h1>
           <p className="text-slate-500 text-sm mt-1">Requisito 8 — Avaliação de impacto de desdobramentos de turmas e trocas de docentes</p>
         </div>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
+        <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
 
       {/* Turnos / Candidatos a Desdobramento */}
@@ -53,17 +55,17 @@ export default async function MudancasPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {shifts.map((shift) => {
-                const isOvercrowded = shift.enrolledStudents > 40 && shift.roomTypeReq === 'Laboratório';
+                const isOvercrowded = shift.enrolled_students > 40 && shift.room_type_req === 'Laboratório';
                 return (
                   <tr key={shift.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-semibold text-slate-800">{shift.course.acronym}</td>
                     <td className="px-4 py-3 font-medium text-slate-900">{shift.name}</td>
-                    <td className="px-4 py-3 text-slate-600">{shift.type || '-'} ({shift.roomTypeReq})</td>
-                    <td className="px-4 py-3 font-semibold text-slate-900">{shift.enrolledStudents} alunos</td>
+                    <td className="px-4 py-3 text-slate-600">{shift.type || '-'} ({shift.room_type_req})</td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">{shift.enrolled_students} alunos</td>
                     <td className="px-4 py-3">
                       {isOvercrowded ? (
                         <span className="text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700">
-                          ⚠️ Sobrelotado — Recomendado Desdobramento
+                          ?? Sobrelotado — Recomendado Desdobramento
                         </span>
                       ) : (
                         <span className="text-xs text-slate-500">Normal</span>
@@ -95,7 +97,7 @@ export default async function MudancasPage() {
                   <div key={l.id} className="flex justify-between">
                     <span>{l.shift.course.acronym} ({l.shift.name})</span>
                     <span className="text-slate-400">
-                      {new Date(l.startTime).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(l.start_time).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 ))}
