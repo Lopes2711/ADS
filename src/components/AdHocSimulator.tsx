@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { splitShiftAction, changeProfessorAction } from '@/app/actions';
 
 interface ShiftItem {
-  id: string;
+  id: number;
   name: string;
   enrolledStudents: number;
   roomTypeReq: string | null;
@@ -13,20 +13,20 @@ interface ShiftItem {
 }
 
 interface ProfessorItem {
-  id: string;
+  id: number;
   name: string;
   email: string;
 }
 
 interface LessonItem {
-  id: string;
+  id: number;
   date: string;
   startTime: string;
   endTime: string;
   courseAcronym: string;
   shiftName: string;
   enrolledStudents: number;
-  currentProfessorId: string | null;
+  currentProfessorId: number | null;
   currentProfessorName: string | null;
 }
 
@@ -43,18 +43,18 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
   const [activeTab, setActiveTab] = useState<'split' | 'professor'>('split');
 
   // Split state
-  const [selectedShiftId, setSelectedShiftId] = useState<string>(shifts[0]?.id || '');
+  const [selectedShiftId, setSelectedShiftId] = useState<number | null>(shifts[0]?.id ?? null);
 
   // Professor change state
-  const [selectedLessonId, setSelectedLessonId] = useState<string>(lessons[0]?.id || '');
-  const [selectedProfId, setSelectedProfId] = useState<string>('');
+  const [selectedLessonId, setSelectedLessonId] = useState<number | null>(lessons[0]?.id ?? null);
+  const [selectedProfId, setSelectedProfId] = useState<number | null>(null);
 
   const selectedShift = shifts.find((s) => s.id === selectedShiftId);
   const selectedLesson = lessons.find((l) => l.id === selectedLessonId);
 
   // Análise de Impacto de Mudança de Professor:
   // Verifica se o professor selecionado tem aulas em simultâneo com a aula selecionada
-  const targetProfId = selectedProfId || selectedLesson?.currentProfessorId;
+  const targetProfId = selectedProfId ?? selectedLesson?.currentProfessorId;
   const targetProf = professors.find((p) => p.id === targetProfId);
 
   let professorConflict: LessonItem | null = null;
@@ -76,14 +76,14 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
   }
 
   const handleSplitShift = () => {
-    if (!selectedShiftId) return;
+    if (selectedShiftId === null) return;
     startTransition(async () => {
       await splitShiftAction(selectedShiftId);
     });
   };
 
   const handleChangeProfessor = () => {
-    if (!selectedLessonId || !selectedProfId) return;
+    if (selectedLessonId === null || selectedProfId === null) return;
     startTransition(async () => {
       await changeProfessorAction(selectedLessonId, selectedProfId);
     });
@@ -136,8 +136,8 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                 Escolher Turno para Desdobrar:
               </label>
               <select
-                value={selectedShiftId}
-                onChange={(e) => setSelectedShiftId(e.target.value)}
+                value={selectedShiftId ?? ''}
+                onChange={(e) => setSelectedShiftId(e.target.value ? Number(e.target.value) : null)}
                 className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500"
               >
                 {shifts.map((s) => (
@@ -242,11 +242,12 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                   Aula a Modificar:
                 </label>
                 <select
-                  value={selectedLessonId}
+                  value={selectedLessonId ?? ''}
                   onChange={(e) => {
-                    setSelectedLessonId(e.target.value);
-                    const l = lessons.find((x) => x.id === e.target.value);
-                    if (l) setSelectedProfId(l.currentProfessorId || '');
+                    const lessonId = e.target.value ? Number(e.target.value) : null;
+                    setSelectedLessonId(lessonId);
+                    const l = lessons.find((x) => x.id === lessonId);
+                    if (l) setSelectedProfId(l.currentProfessorId);
                   }}
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500"
                 >
@@ -263,8 +264,8 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                   Novo Docente a Designar:
                 </label>
                 <select
-                  value={selectedProfId}
-                  onChange={(e) => setSelectedProfId(e.target.value)}
+                  value={selectedProfId ?? ''}
+                  onChange={(e) => setSelectedProfId(e.target.value ? Number(e.target.value) : null)}
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Selecione um docente...</option>

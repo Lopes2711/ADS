@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 import { toggleRuleAction } from '@/app/actions';
 
 interface RuleToggleProps {
-  ruleId: string;
+  ruleId: number;
   isActive: boolean;
 }
 

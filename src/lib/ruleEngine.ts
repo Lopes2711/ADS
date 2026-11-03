@@ -6,7 +6,7 @@ export interface EvaluationResult {
   errorsCount: number;
   warningsCount: number;
   violations: {
-    lessonId: string;
+    lessonId: number;
     courseAcronym: string;
     shiftName: string;
     ruleCode: string;
@@ -45,7 +45,7 @@ export async function evaluateScheduleRules(): Promise<EvaluationResult> {
   await prisma.violation.deleteMany({});
 
   const violationsToInsert: {
-    lessonId: string;
+    lessonId: number;
     ruleCode: string;
     description: string;
     severity: 'ERRO' | 'AVISO';

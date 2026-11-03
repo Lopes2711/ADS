@@ -171,7 +171,7 @@ async function main() {
   console.log('⚠️  Seeding violations...');
   const lessons = await prisma.lesson.findMany({ include: { shift: { include: { course: true } }, room: true } });
 
-  const viols: { scheduleId: string; lessonId: string; ruleCode: string; description: string; severity: string }[] = [];
+  const viols: { scheduleId: number; lessonId: number; ruleCode: string; description: string; severity: string }[] = [];
 
   for (const l of lessons) {
     const dur = (l.endTime.getTime() - l.startTime.getTime()) / 60000;
@@ -218,4 +218,3 @@ async function main() {
 main()
   .catch((e) => { console.error(e); process.exit(1); })
   .finally(() => prisma.$disconnect());
-
