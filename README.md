@@ -72,7 +72,7 @@ development password.
 npm run dev
 ```
 
-#### Step 6: Access the App
+#### Step 7: Access the App
 Open your browser and navigate to:
 👉 **[http://localhost:3000](http://localhost:3000)**
 
@@ -86,6 +86,7 @@ are recorded in the `Log` table with the authenticated user as the actor.
 | Command | Description |
 | :--- | :--- |
 | `npm run dev` | Starts the Next.js development server with Turbopack at `http://localhost:3000` |
+| `npm run seed` | Lightly populates the local SQLite database with demo courses, rooms, lessons, rules, and violations |
 | `npm run build` | Builds the application for production |
 | `npm run start` | Runs the compiled production build |
 | `npm run lint` | Runs ESLint to check for code quality and style issues |
@@ -102,7 +103,8 @@ ADS/
 ├── prisma/
 │   ├── migrations/        # SQL migration history
 │   ├── dev.db             # Local SQLite database (generated, git-ignored)
-│   └── schema.prisma      # Prisma schema definition (User model, SQLite datasource)
+│   ├── schema.prisma      # Prisma schema definition
+│   └── seed.ts            # Script to lightly populate the DB with demo data
 ├── src/
 │   ├── app/
 │   │   ├── actions.ts     # Next.js Server Actions (e.g., createUser)
