@@ -98,7 +98,8 @@ ADS/
 ├── prisma/
 │   ├── migrations/        # SQL migration history
 │   ├── dev.db             # Local SQLite database (generated, git-ignored)
-│   └── schema.prisma      # Prisma schema definition (User model, SQLite datasource)
+│   ├── schema.prisma      # Prisma schema definition
+│   └── seed.ts            # Script to lightly populate the DB with demo data
 ├── src/
 │   ├── app/
 │   │   ├── actions.ts     # Next.js Server Actions (e.g., createUser)
