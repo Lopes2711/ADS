@@ -12,7 +12,7 @@ datasource db {
 // ------------------------------------------------------
 
 // Role values: ADMIN | COORDINATOR | PROFESSOR | STUDENT
-// (SQLite does not support enums — stored as plain String)
+// (SQLite does not support enums - stored as plain String)
 
 model User {
   id              Int             @id @default(autoincrement())

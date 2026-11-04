@@ -74,10 +74,10 @@ export function RoomAssigner({
                   <span>{room.type}</span>
                 </div>
                 {!room.isAvailable && (
-                  <p className="text-rose-600 text-[10px] font-semibold">⚠️ Ocupada no horário</p>
+                  <p className="text-rose-600 text-[10px] font-semibold">Ocupada no horário</p>
                 )}
                 {!room.isCapacitySufficient && (
-                  <p className="text-rose-600 text-[10px] font-semibold">⚠️ Lotação insuficiente</p>
+                  <p className="text-rose-600 text-[10px] font-semibold">Lotação insuficiente</p>
                 )}
                 {!room.isTypeMatch && room.isCapacitySufficient && (
                   <p className="text-amber-700 text-[10px]">Aviso: tipo não coincide</p>

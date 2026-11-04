@@ -101,7 +101,6 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <span>✂️</span>
           <span>Desdobramento de Turma / Turno</span>
         </button>
 
@@ -113,7 +112,6 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <span>👨‍🏫</span>
           <span>Mudança de Docente de uma UC</span>
         </button>
       </div>
@@ -172,15 +170,15 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
               disabled={isPending || !selectedShift}
               className="w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              <span>{isPending ? 'A processar desdobramento...' : '✂️ Confirmar Desdobramento do Turno'}</span>
+              <span>{isPending ? 'A processar desdobramento...' : 'Confirmar Desdobramento do Turno'}</span>
             </button>
           </div>
 
           {/* Análise de Impacto do Desdobramento */}
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-xl border border-slate-700 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <span>📊</span> Avaliação de Impacto da Mudança
+              <h3 className="font-bold text-base text-white">
+                Avaliação de Impacto da Mudança
               </h3>
               <span className="text-[11px] px-2 py-0.5 rounded bg-blue-500/30 text-blue-300 border border-blue-400/30 font-semibold">
                 Requisito 8
@@ -194,7 +192,6 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
             {selectedShift ? (
               <div className="space-y-3 pt-2 text-xs">
                 <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700 flex items-start gap-3">
-                  <span className="text-base text-rose-400">🔴</span>
                   <div>
                     <span className="font-semibold text-rose-300">Cenário Atual (Sem desdobrar):</span>
                     <p className="text-slate-300 text-[11px] mt-0.5">
@@ -204,7 +201,6 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
                 </div>
 
                 <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800/80 flex items-start gap-3">
-                  <span className="text-base text-emerald-400">🟢</span>
                   <div>
                     <span className="font-semibold text-emerald-300">Cenário Após Desdobramento:</span>
                     <p className="text-emerald-100 text-[11px] mt-0.5">
@@ -283,15 +279,15 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
               disabled={isPending || !selectedLessonId || !selectedProfId}
               className="w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              <span>{isPending ? 'A atualizar docente...' : '💾 Gravar Mudança de Professor'}</span>
+              <span>{isPending ? 'A atualizar docente...' : 'Gravar Mudança de Professor'}</span>
             </button>
           </div>
 
           {/* Análise de Impacto da Mudança de Docente */}
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-xl border border-slate-700 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <span>⚡</span> Avaliação de Conflitos & Sobreposição
+              <h3 className="font-bold text-base text-white">
+                Avaliação de Conflitos & Sobreposição
               </h3>
               <span className="text-[11px] px-2 py-0.5 rounded bg-blue-500/30 text-blue-300 border border-blue-400/30 font-semibold">
                 Impacto no Horário
@@ -306,7 +302,6 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
               {professorConflict ? (
                 <div className="p-4 rounded-lg bg-rose-950/80 border border-rose-800 space-y-1.5">
                   <div className="flex items-center gap-2 text-rose-400 font-bold">
-                    <span>⛔</span>
                     <span>ALERTA DE SOBREPOSIÇÃO DETETADO!</span>
                   </div>
                   <p className="text-rose-200 text-xs">
@@ -322,7 +317,6 @@ export function AdHocSimulator({ shifts, professors, lessons }: AdHocSimulatorPr
               ) : targetProf ? (
                 <div className="p-4 rounded-lg bg-emerald-950/60 border border-emerald-800/80 space-y-1.5">
                   <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                    <span>✅</span>
                     <span>SEM SOBREPOSIÇÕES PARA O DOCENTE</span>
                   </div>
                   <p className="text-emerald-200 text-xs">
