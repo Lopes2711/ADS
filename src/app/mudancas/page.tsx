@@ -32,7 +32,7 @@ export default async function MudancasPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Mudanças Ad-hoc &amp; Impacto</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 8 — Avaliação de impacto de desdobramentos de turmas e trocas de docentes</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 8 - Avaliação de impacto de desdobramentos de turmas e trocas de docentes</p>
         </div>
         <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
@@ -66,7 +66,7 @@ export default async function MudancasPage() {
                     <td className="px-4 py-3">
                       {isOvercrowded ? (
                         <span className="text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700">
-                          ?? Sobrelotado — Recomendado Desdobramento
+                          Sobrelotado - Recomendado Desdobramento
                         </span>
                       ) : (
                         <span className="text-xs text-slate-500">Normal</span>

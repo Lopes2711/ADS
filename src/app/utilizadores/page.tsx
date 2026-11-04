@@ -82,7 +82,7 @@ export default async function UsersPage() {
             .filter((user) => user.role_management && !user.role_management.approved)
             .map((user) => (
               <div key={user.role_management!.id} className="flex items-center justify-between gap-4 px-4 py-3 border-t text-sm">
-                <span>{user.name} — solicitar: <strong>{user.role_management!.requested_role}</strong></span>
+                <span>{user.name} - solicitar: <strong>{user.role_management!.requested_role}</strong></span>
                 <form action={approveRoleRequestAction}>
                   <input type="hidden" name="requestId" value={user.role_management!.id} />
                   <button type="submit" className="bg-emerald-600 text-white rounded px-3 py-1.5 hover:bg-emerald-700">

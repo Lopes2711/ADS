@@ -4,7 +4,7 @@ A full-stack web application built with **Next.js 16** (App Router), **React 19*
 
 ---
 
-## 🚀 Getting Started for New Team Members
+## Getting Started for New Team Members
 
 Welcome to the team! Follow this step-by-step guide to get the project running locally on your machine for the first time.
 
@@ -12,8 +12,8 @@ Welcome to the team! Follow this step-by-step guide to get the project running l
 
 Make sure you have the following installed on your machine:
 
-- **Node.js**: `v20.x` or later (LTS recommended) — verify with `node -v`
-- **npm**: `v10.x` or later (bundled with Node.js) — verify with `npm -v`
+- **Node.js**: `v20.x` or later (LTS recommended) - verify with `node -v`
+- **npm**: `v10.x` or later (bundled with Node.js) - verify with `npm -v`
 - **Git**
 
 ---
@@ -74,14 +74,14 @@ npm run dev
 
 #### Step 7: Access the App
 Open your browser and navigate to:
-👉 **[http://localhost:3000](http://localhost:3000)**
+**[http://localhost:3000](http://localhost:3000)**
 
 Sign in at `/login`. Mutating operations require an authenticated session and
 are recorded in the `Log` table with the authenticated user as the actor.
 
 ---
 
-## 🛠️ Available Scripts
+## Available Scripts
 
 | Command | Description |
 | :--- | :--- |
@@ -96,7 +96,7 @@ are recorded in the `Log` table with the authenticated user as the actor.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 ADS/
@@ -121,7 +121,7 @@ ADS/
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
@@ -131,7 +131,7 @@ ADS/
 
 ---
 
-## ❓ Troubleshooting & FAQs
+## Troubleshooting & FAQs
 
 ### Prisma Client Type Mismatches or "PrismaClientInitializationError"
 If you encounter issues where Prisma types appear missing or stale:

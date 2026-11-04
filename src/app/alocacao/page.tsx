@@ -28,7 +28,7 @@ export default async function AlocacaoPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Alocação de Salas</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 4 — Cruzamento de requisitos pedagógicos e salas disponíveis</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 4 - Cruzamento de requisitos pedagógicos e salas disponíveis</p>
         </div>
         <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
@@ -76,7 +76,7 @@ export default async function AlocacaoPage() {
                 return (
                   <tr key={lesson.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-medium text-slate-800">
-                      {lesson.shift.course.acronym} — {lesson.shift.name}
+                      {lesson.shift.course.acronym} - {lesson.shift.name}
                     </td>
                     <td className="px-4 py-3 text-slate-700">{enrolled} alunos</td>
                     <td className="px-4 py-3 text-slate-600">{reqType || 'Qualquer'}</td>

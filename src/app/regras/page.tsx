@@ -30,7 +30,7 @@ export default async function RegrasPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Regras &amp; Violações</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 2 — Motor de regras e validação de integridade</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 2 - Motor de regras e validação de integridade</p>
         </div>
         <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
@@ -69,7 +69,7 @@ export default async function RegrasPage() {
                   {v.severity}
                 </span>
                 <span className="font-semibold text-sm text-slate-900">
-                  {v.lesson.shift.course.acronym} — {v.lesson.shift.name}
+                  {v.lesson.shift.course.acronym} - {v.lesson.shift.name}
                 </span>
                 {v.rule_code && (
                   <span className="text-xs font-mono text-slate-400">[{v.rule_code}]</span>

@@ -38,7 +38,7 @@ export default async function HomePage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Gestão de Horários ISCTE</h1>
-        <p className="text-slate-500 mt-1">Projeto 1 — Arquitetura e Desenho de Software</p>
+        <p className="text-slate-500 mt-1">Projeto 1 - Arquitetura e Desenho de Software</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -66,18 +66,18 @@ export default async function HomePage() {
         <h2 className="text-lg font-semibold text-slate-900">Módulos Disponíveis ({user.role})</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link href="/horarios" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-            <div className="font-semibold text-slate-900">📅 Horários &amp; Aulas</div>
+            <div className="font-semibold text-slate-900">Horários &amp; Aulas</div>
             <div className="text-sm text-slate-500 mt-1">Consultar horário publicado com todas as aulas e docentes.</div>
           </Link>
           {canSeeImport && (
             <Link href="/importar" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-              <div className="font-semibold text-slate-900">📥 Importar Horários (Req. 2)</div>
+              <div className="font-semibold text-slate-900">Importar Horários (Req. 2)</div>
               <div className="text-sm text-slate-500 mt-1">Importar/carregar horários e estado da base de dados.</div>
             </Link>
           )}
           {canSeeRules && (
             <Link href="/regras" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-              <div className="font-semibold text-slate-900">⚖️ Regras &amp; Violações (Req. 2)</div>
+              <div className="font-semibold text-slate-900">Regras &amp; Violações (Req. 2)</div>
               <div className="text-sm text-slate-500 mt-1">
                 {user.role === 'ADMIN'
                   ? 'Configurar regras ativas, validar horário e consultar violações.'
@@ -87,13 +87,13 @@ export default async function HomePage() {
           )}
           {canSeeAllocation && (
             <Link href="/alocacao" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-              <div className="font-semibold text-slate-900">🏫 Alocação de Salas (Req. 4)</div>
+              <div className="font-semibold text-slate-900">Alocação de Salas (Req. 4)</div>
               <div className="text-sm text-slate-500 mt-1">Alocar sala a aula e consultar sugestões de salas disponíveis.</div>
             </Link>
           )}
           {canSeeAdHoc && (
             <Link href="/mudancas" className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition">
-              <div className="font-semibold text-slate-900">⚡ Mudanças Ad-hoc (Req. 8)</div>
+              <div className="font-semibold text-slate-900">Mudanças Ad-hoc (Req. 8)</div>
               <div className="text-sm text-slate-500 mt-1">
                 {user.role === 'COORDINATOR'
                   ? 'Trocar docente de aula, desdobrar turno sobrelotado e simular impacto.'

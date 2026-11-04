@@ -26,7 +26,7 @@ export default async function ImportarPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Transformação &amp; Estado da BD</h1>
-          <p className="text-slate-500 text-sm mt-1">Requisito 2 — Registos armazenados no SQLite via Prisma</p>
+          <p className="text-slate-500 text-sm mt-1">Requisito 2 - Registos armazenados no SQLite via Prisma</p>
         </div>
         <Link href="/home" className="text-sm text-blue-600 hover:underline">&larr; Voltar ao Início</Link>
       </div>
@@ -40,7 +40,7 @@ export default async function ImportarPage() {
               type="submit"
               className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded transition cursor-pointer"
             >
-              🔄 Recarregar Dados Demo
+              Recarregar Dados Demo
             </button>
           </form>
         </div>

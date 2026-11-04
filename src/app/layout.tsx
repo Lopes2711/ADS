@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const metadata: Metadata = {
   title: 'Gestão de Horários ISCTE',
-  description: 'Projeto 1 — Arquitetura e Desenho de Software',
+  description: 'Projeto 1 - Arquitetura e Desenho de Software',
 };
 
 // @next-codemod-ignore
